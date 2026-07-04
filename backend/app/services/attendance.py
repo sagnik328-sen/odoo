@@ -58,6 +58,18 @@ class AttendanceService:
         else:
             attendance = self.repo.create(attendance)
         
+        # Create notification for successful check-in
+        from app.models.leave import Notification, NotificationType
+        time_str = attendance.check_in.strftime('%I:%M %p')
+        checkin_notification = Notification(
+            user_id=user.id,
+            title="Attendance Checked In",
+            message=f"You successfully clocked in for today at {time_str}.",
+            notification_type=NotificationType.ATTENDANCE
+        )
+        self.db.add(checkin_notification)
+        self.db.commit()
+        
         return AttendanceResponse.model_validate(attendance)
 
     def check_out(self, user: User) -> AttendanceResponse:
@@ -87,6 +99,19 @@ class AttendanceService:
         attendance.attendance_status = self._determine_attendance_status(attendance.working_hours)
         
         attendance = self.repo.update(attendance)
+        
+        # Create notification for successful check-out
+        from app.models.leave import Notification, NotificationType
+        time_str = attendance.check_out.strftime('%I:%M %p')
+        checkout_notification = Notification(
+            user_id=user.id,
+            title="Attendance Checked Out",
+            message=f"You successfully clocked out for today at {time_str}. Total hours: {attendance.working_hours} hrs.",
+            notification_type=NotificationType.ATTENDANCE
+        )
+        self.db.add(checkout_notification)
+        self.db.commit()
+        
         return AttendanceResponse.model_validate(attendance)
 
     def get_today_attendance(self, user: User) -> Optional[AttendanceResponse]:

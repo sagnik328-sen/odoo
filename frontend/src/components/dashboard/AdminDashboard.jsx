@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
 import EmployeeDirectory from './EmployeeDirectory';
+import { notificationApi } from '../../api/notification';
 import { 
   ShieldAlert, Settings, Bell, LogOut, User, 
   Plus, Check, X, ClipboardList, Database, Heart,
@@ -38,11 +39,23 @@ const AdminDashboard = () => {
   const loadData = () => {
     setUsersList(mockState.getUsersList());
     setSystemLogs(mockState.getSystemLogs());
-    setNotifications(mockState.getNotifications(user?.employee_id, 'admin'));
+  };
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await notificationApi.list();
+      setNotifications(data || []);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
   };
 
   useEffect(() => {
     loadData();
+    if (user) {
+      fetchNotifications();
+    }
   }, [user]);
 
   // Actions
@@ -148,9 +161,13 @@ const AdminDashboard = () => {
     loadData();
   };
 
-  const handleMarkAllRead = () => {
-    mockState.markAllNotificationsRead(user?.employee_id, 'admin');
-    loadData();
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationApi.markAllRead();
+      await fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark notifications read:", err);
+    }
   };
 
   // Recharts Role Distribution calculations

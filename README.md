@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 7 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance, database-backed leave management, and a robust payroll management system featuring ReportLab PDF payslip generation.
+> **Current status:** Milestone 8 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, and an integrated real-time notification engine with automatic triggers and reminder tools.
 
 ## Technology stack
 
@@ -478,5 +478,31 @@ Frontend:
 | DELETE | `/api/v1/payroll/{id}` | HR/Admin | Delete/void a payslip |
 | GET | `/api/v1/payroll/stats` | HR/Admin | View payroll statistics |
 | GET | `/api/v1/payroll/{id}/pdf` | Authenticated | Download ReportLab PDF payslip |
+
+
+## Milestone 8 scope
+
+Implemented:
+
+Backend:
+- Configured automatic triggers to generate in-app notifications upon successful clock-in and clock-out (Attendance confirmations).
+- Configured automatic triggers to generate notifications when a payslip is generated and disbursed (Payroll availability).
+- Created a bulk check-in reminder endpoint `POST /api/v1/attendance/remind-all` (HR/Admin only) to send notifications to active employees who haven't clocked in today.
+- Implemented `mark_all_read` in `NotificationService` and exposed `PUT /api/v1/notifications/read-all` to bulk silence alerts.
+
+Frontend:
+- Created a dedicated `notification.js` API helper for managing user notifications.
+- Integrated notifications API in `EmployeeDashboard.jsx`, mapping items to database fields, displaying reactive alert badges, and supporting click-to-read actions.
+- Integrated notifications API in `HRDashboard.jsx` and added a **"Remind Clock-In"** quick action button in the banner to bulk prompt unchecked-in employees.
+- Integrated notifications API in `AdminDashboard.jsx`.
+
+### Notifications & Reminders API
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/notifications` | Authenticated | List personal notifications |
+| PUT | `/api/v1/notifications/{id}/read` | Authenticated | Mark a notification as read |
+| PUT | `/api/v1/notifications/read-all` | Authenticated | Mark all unread notifications as read |
+| POST | `/api/v1/attendance/remind-all` | HR/Admin | Trigger clock-in reminders to unchecked-in staff |
 
 

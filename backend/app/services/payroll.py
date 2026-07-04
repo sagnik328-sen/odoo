@@ -72,6 +72,18 @@ class PayrollService:
         )
 
         created = self.payroll_repo.create(new_payslip)
+
+        # Create notification for payroll availability
+        from app.models.leave import Notification, NotificationType
+        payroll_notification = Notification(
+            user_id=user_id,
+            title="Payroll published",
+            message=f"Your payslip for {month} {year} is now available. Net take-home pay: ${net_salary:,.2f}",
+            notification_type=NotificationType.PAYROLL
+        )
+        self.db.add(payroll_notification)
+        self.db.commit()
+
         return created
 
     def get_payslip(self, payslip_id: UUID) -> Optional[Payslip]:

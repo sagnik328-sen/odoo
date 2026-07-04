@@ -4,6 +4,7 @@ import { mockState } from '../../utils/mockState';
 import { employeeApi } from '../../api/employee';
 import { attendanceApi } from '../../api/attendance';
 import { payrollApi } from '../../api/payroll';
+import { notificationApi } from '../../api/notification';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Clock, Calendar, DollarSign, Bell, LogOut, User, 
@@ -39,6 +40,7 @@ const EmployeeDashboard = () => {
     mutationFn: attendanceApi.checkIn,
     onSuccess: () => {
       queryClient.invalidateQueries(['todayAttendance']);
+      fetchNotifications();
     },
   });
   
@@ -47,6 +49,7 @@ const EmployeeDashboard = () => {
     mutationFn: attendanceApi.checkOut,
     onSuccess: () => {
       queryClient.invalidateQueries(['todayAttendance']);
+      fetchNotifications();
     },
   });
   
@@ -116,11 +119,40 @@ const EmployeeDashboard = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await notificationApi.list();
+      setNotifications(data || []);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationApi.markAllRead();
+      await fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+    }
+  };
+
+  const handleMarkOneRead = async (id) => {
+    try {
+      await notificationApi.markRead(id);
+      await fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadData();
       fetchProfile();
       fetchPayroll();
+      fetchNotifications();
     }
   }, [user]);
 
@@ -276,10 +308,7 @@ const EmployeeDashboard = () => {
     loadData();
   };
 
-  const handleMarkAllRead = () => {
-    mockState.markAllNotificationsRead(user.employee_id, user.role);
-    loadData();
-  };
+
 
   const handleDownloadPayslip = async (slip) => {
     try {
@@ -494,7 +523,7 @@ const EmployeeDashboard = () => {
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
               <span className="p-2 bg-indigo-50 rounded-lg text-indigo-600 relative">
                 <Bell className="h-5 w-5" />
-                {notifications.filter(n => !n.read).length > 0 && (
+                {notifications.filter(n => !n.is_read).length > 0 && (
                   <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
                 )}
               </span>
@@ -518,17 +547,21 @@ const EmployeeDashboard = () => {
               notifications.map(n => (
                 <div 
                   key={n.id} 
+                  onClick={() => !n.is_read && handleMarkOneRead(n.id)}
                   className={`flex gap-3 p-2.5 rounded-xl border text-xs transition ${
-                    n.read 
+                    !n.is_read ? 'cursor-pointer' : ''
+                  } ${
+                    n.is_read 
                       ? 'border-gray-50 bg-gray-50/50 text-gray-500' 
-                      : 'border-indigo-50 bg-indigo-50/20 text-gray-700 font-medium'
+                      : 'border-indigo-50 bg-indigo-50/20 hover:bg-indigo-50/40 text-gray-700 font-medium'
                   }`}
+                  title={!n.is_read ? "Click to mark as read" : ""}
                 >
                   <div className="flex-1">
                     <p className="font-bold text-gray-800">{n.title}</p>
                     <p className="mt-0.5">{n.message}</p>
-                    <span className="text-[10px] text-gray-400 block mt-1">
-                      {new Date(n.date).toLocaleDateString()} at {new Date(n.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    <span className="text-[10px] text-gray-450 block mt-1">
+                      {new Date(n.created_at).toLocaleDateString()} at {new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </span>
                   </div>
                 </div>

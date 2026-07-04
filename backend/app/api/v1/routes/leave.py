@@ -68,6 +68,14 @@ def notifications(
     return NotificationService(db).list_for_user(current_user)
 
 
+@router.put("/notifications/read-all", response_model=list[NotificationResponse])
+def mark_all_notifications_read(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return NotificationService(db).mark_all_read(current_user)
+
+
 @router.put("/notifications/{notification_id}/read", response_model=NotificationResponse)
 def mark_notification_read(
     notification_id: UUID,

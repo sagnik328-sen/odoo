@@ -55,5 +55,10 @@ export const attendanceApi = {
       params: { approved }
     });
     return response.data;
+  },
+
+  remindAll: async () => {
+    const response = await apiClient.post("/attendance/remind-all");
+    return response.data;
   }
 };

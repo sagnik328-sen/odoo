@@ -4,6 +4,8 @@ import { mockState } from '../../utils/mockState';
 import EmployeeDirectory from './EmployeeDirectory';
 import { payrollApi } from '../../api/payroll';
 import { employeeApi } from '../../api/employee';
+import { notificationApi } from '../../api/notification';
+import { attendanceApi } from '../../api/attendance';
 import { 
   Users, Calendar, DollarSign, Bell, LogOut, User, 
   Plus, Check, X, ClipboardList, CheckCircle, AlertCircle, 
@@ -80,10 +82,55 @@ const HRDashboard = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await notificationApi.list();
+      setNotifications(data || []);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationApi.markAllRead();
+      await fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark notifications read:", err);
+    }
+  };
+
+  const handleMarkOneRead = async (id) => {
+    try {
+      await notificationApi.markRead(id);
+      await fetchNotifications();
+    } catch (err) {
+      console.error("Failed to mark notification read:", err);
+    }
+  };
+
+  const handleSendReminders = async () => {
+    try {
+      const res = await attendanceApi.remindAll();
+      alert(res.message || "Successfully sent check-in reminders!");
+      mockState.addSystemLog({
+        action: 'Attendance Reminders',
+        user: user.email,
+        details: `Dispatched bulk clock-in reminders to ${res.count} employees.`
+      });
+      loadData();
+    } catch (err) {
+      console.error("Failed to send reminders:", err);
+      alert("Failed to dispatch attendance reminders.");
+    }
+  };
+
   useEffect(() => {
     loadData();
     if (user) {
       fetchPayrollData();
+      fetchNotifications();
     }
   }, [user]);
 
@@ -288,10 +335,7 @@ const HRDashboard = () => {
     }
   };
 
-  const handleMarkAllRead = () => {
-    mockState.markAllNotificationsRead(user?.employee_id, 'hr');
-    loadData();
-  };
+
 
   // Recharts Attendance Rate Simulation
   const attendanceRateData = [
@@ -344,12 +388,18 @@ const HRDashboard = () => {
             </p>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button 
               onClick={() => setIsRegisterModalOpen(true)}
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-900 shadow-md transition hover:bg-emerald-50 hover:scale-105 active:scale-95"
             >
               <UserPlus className="h-4 w-4" /> Add Employee
+            </button>
+            <button 
+              onClick={handleSendReminders}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:scale-105 active:scale-95"
+            >
+              <Bell className="h-4 w-4" /> Remind Clock-In
             </button>
             <button 
               onClick={() => setIsPayrollModalOpen(true)}
@@ -498,7 +548,7 @@ const HRDashboard = () => {
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <span className="p-2 bg-emerald-50 rounded-lg text-emerald-600 relative">
                   <Bell className="h-5 w-5" />
-                  {notifications.filter(n => !n.read).length > 0 && (
+                  {notifications.filter(n => !n.is_read).length > 0 && (
                     <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
                   )}
                 </span>
@@ -522,11 +572,15 @@ const HRDashboard = () => {
                 notifications.map(n => (
                   <div 
                     key={n.id} 
+                    onClick={() => !n.is_read && handleMarkOneRead(n.id)}
                     className={`p-2.5 rounded-xl border text-xs transition ${
-                      n.read 
+                      !n.is_read ? 'cursor-pointer' : ''
+                    } ${
+                      n.is_read 
                         ? 'border-gray-50 bg-gray-50/50 text-gray-400' 
-                        : 'border-emerald-50 bg-emerald-50/10 text-gray-600 font-medium'
+                        : 'border-emerald-50 bg-emerald-50/10 hover:bg-emerald-50/20 text-gray-600 font-medium'
                     }`}
+                    title={!n.is_read ? "Click to mark as read" : ""}
                   >
                     <p className="font-bold text-gray-850">{n.title}</p>
                     <p className="mt-0.5">{n.message}</p>

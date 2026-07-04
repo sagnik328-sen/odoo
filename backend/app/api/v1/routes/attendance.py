@@ -140,3 +140,40 @@ def approve_correction(
 ):
     service = AttendanceService(db)
     return service.approve_correction(correction_id, approved, current_user)
+
+
+@router.post(
+    "/remind-all",
+    dependencies=[Depends(RoleChecker([UserRole.ADMIN, UserRole.HR]))]
+)
+def send_attendance_reminders(
+    db: Session = Depends(get_db)
+):
+    from app.models.user import UserRole, User
+    from app.models.attendance import Attendance
+    from app.models.leave import Notification, NotificationType
+    from sqlalchemy import select
+    from datetime import date
+
+    # Get all employees
+    employees = db.scalars(select(User).where(User.role == UserRole.EMPLOYEE)).all()
+    
+    # Get today's check-ins
+    today = date.today()
+    check_ins = db.scalars(select(Attendance.user_id).where(Attendance.attendance_date == today)).all()
+    checked_in_set = set(check_ins)
+
+    reminded_count = 0
+    for emp in employees:
+        if emp.id not in checked_in_set:
+            notification = Notification(
+                user_id=emp.id,
+                title="Attendance Check-In Reminder",
+                message="You have not checked in for today yet. Please remember to clock in to log your hours.",
+                notification_type=NotificationType.ATTENDANCE
+            )
+            db.add(notification)
+            reminded_count += 1
+            
+    db.commit()
+    return {"message": f"Successfully sent check-in reminders to {reminded_count} employees.", "count": reminded_count}
