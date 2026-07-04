@@ -44,7 +44,9 @@ const EmployeeDirectory = ({ currentUser }) => {
     joining_date: '',
     base_salary: 0,
     allowances: 0,
-    deductions: 0
+    bonuses: 0,
+    deductions: 0,
+    tax: 0
   });
 
   // Detailed Modal Tab
@@ -125,7 +127,9 @@ const EmployeeDirectory = ({ currentUser }) => {
         joining_date: formFields.joining_date ? new Date(formFields.joining_date).toISOString() : null,
         base_salary: parseFloat(formFields.base_salary) || 0,
         allowances: parseFloat(formFields.allowances) || 0,
-        deductions: parseFloat(formFields.deductions) || 0
+        bonuses: parseFloat(formFields.bonuses) || 0,
+        deductions: parseFloat(formFields.deductions) || 0,
+        tax: parseFloat(formFields.tax) || 0
       };
       
       const created = await employeeApi.createEmployee(payload);
@@ -157,7 +161,9 @@ const EmployeeDirectory = ({ currentUser }) => {
         joining_date: '',
         base_salary: 0,
         allowances: 0,
-        deductions: 0
+        bonuses: 0,
+        deductions: 0,
+        tax: 0
       });
 
       setTimeout(() => {
@@ -187,7 +193,9 @@ const EmployeeDirectory = ({ currentUser }) => {
       joining_date: emp.profile?.joining_date ? emp.profile.joining_date.substring(0, 10) : '',
       base_salary: emp.profile?.base_salary || 0,
       allowances: emp.profile?.allowances || 0,
-      deductions: emp.profile?.deductions || 0
+      bonuses: emp.profile?.bonuses || 0,
+      deductions: emp.profile?.deductions || 0,
+      tax: emp.profile?.tax || 0
     });
     setSelectedEmpId(emp.id);
     setIsEditModalOpen(true);
@@ -205,7 +213,9 @@ const EmployeeDirectory = ({ currentUser }) => {
         joining_date: formFields.joining_date ? new Date(formFields.joining_date).toISOString() : null,
         base_salary: parseFloat(formFields.base_salary) || 0,
         allowances: parseFloat(formFields.allowances) || 0,
-        deductions: parseFloat(formFields.deductions) || 0
+        bonuses: parseFloat(formFields.bonuses) || 0,
+        deductions: parseFloat(formFields.deductions) || 0,
+        tax: parseFloat(formFields.tax) || 0
       };
       
       const updated = await employeeApi.updateEmployee(selectedEmpId, payload);
@@ -744,12 +754,34 @@ const EmployeeDirectory = ({ currentUser }) => {
                   </div>
 
                   <div>
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Bonuses ($)</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={formFields.bonuses}
+                      onChange={(e) => setFormFields({ ...formFields, bonuses: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Deductions ($)</label>
                     <input
                       type="number"
                       placeholder="0.00"
                       value={formFields.deductions}
                       onChange={(e) => setFormFields({ ...formFields, deductions: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Tax ($)</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={formFields.tax}
+                      onChange={(e) => setFormFields({ ...formFields, tax: e.target.value })}
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -961,12 +993,34 @@ const EmployeeDirectory = ({ currentUser }) => {
                   </div>
 
                   <div>
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Bonuses ($)</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={formFields.bonuses}
+                      onChange={(e) => setFormFields({ ...formFields, bonuses: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Deductions ($)</label>
                     <input
                       type="number"
                       placeholder="0.00"
                       value={formFields.deductions}
                       onChange={(e) => setFormFields({ ...formFields, deductions: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Tax ($)</label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      value={formFields.tax}
+                      onChange={(e) => setFormFields({ ...formFields, tax: e.target.value })}
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -1125,20 +1179,34 @@ const EmployeeDirectory = ({ currentUser }) => {
                   <h5 className="font-bold text-slate-800 text-sm mb-3">Compensation Structure</h5>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Base Salary</span>
-                    <span className="font-bold text-slate-800">${(selectedEmp.profile?.base_salary || 0).toLocaleString()}</span>
+                    <span className="font-bold text-slate-800">${(selectedEmp.profile?.base_salary || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Allowances</span>
-                    <span className="font-bold text-green-600">+ ${(selectedEmp.profile?.allowances || 0).toLocaleString()}</span>
+                    <span className="font-bold text-green-600">+ ${(selectedEmp.profile?.allowances || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Bonuses</span>
+                    <span className="font-bold text-green-600">+ ${(selectedEmp.profile?.bonuses || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Deductions</span>
-                    <span className="font-bold text-red-500">- ${(selectedEmp.profile?.deductions || 0).toLocaleString()}</span>
+                    <span className="font-bold text-red-500">- ${(selectedEmp.profile?.deductions || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Tax</span>
+                    <span className="font-bold text-red-500">- ${(selectedEmp.profile?.tax || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between pt-2">
-                    <span className="font-bold text-slate-800">Net Estimated Salary</span>
+                    <span className="font-bold text-slate-850">Net Take-Home Salary</span>
                     <span className="font-black text-indigo-600 text-base">
-                      ${((selectedEmp.profile?.base_salary || 0) + (selectedEmp.profile?.allowances || 0) - (selectedEmp.profile?.deductions || 0)).toLocaleString()}
+                      ${(
+                        (selectedEmp.profile?.base_salary || 0) + 
+                        (selectedEmp.profile?.allowances || 0) + 
+                        (selectedEmp.profile?.bonuses || 0) - 
+                        (selectedEmp.profile?.deductions || 0) - 
+                        (selectedEmp.profile?.tax || 0)
+                      ).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </span>
                   </div>
                 </div>

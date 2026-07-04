@@ -26,7 +26,9 @@ class EmployeeProfileResponse(BaseModel):
     joining_date: Optional[datetime] = None
     base_salary: float = 0.0
     allowances: float = 0.0
+    bonuses: float = 0.0
     deductions: float = 0.0
+    tax: float = 0.0
     profile_picture: Optional[str] = None
     documents: List[EmployeeDocumentResponse] = []
 
@@ -61,7 +63,9 @@ class EmployeeCreate(BaseModel):
     joining_date: Optional[datetime] = None
     base_salary: float = 0.0
     allowances: float = 0.0
+    bonuses: float = 0.0
     deductions: float = 0.0
+    tax: float = 0.0
 
 
 class EmployeeUpdate(BaseModel):
@@ -79,7 +83,9 @@ class EmployeeUpdate(BaseModel):
     joining_date: Optional[datetime] = None
     base_salary: Optional[float] = None
     allowances: Optional[float] = None
+    bonuses: Optional[float] = None
     deductions: Optional[float] = None
+    tax: Optional[float] = None
 
 
 class PaginatedEmployeeResponse(BaseModel):

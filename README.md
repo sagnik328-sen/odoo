@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 6 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance, and database-backed leave and time-off management with notifications.
+> **Current status:** Milestone 7 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance, database-backed leave management, and a robust payroll management system featuring ReportLab PDF payslip generation.
 
 ## Technology stack
 
@@ -444,4 +444,39 @@ Apply the Milestone 6 schema before starting the API:
 cd backend
 python -m alembic upgrade head
 ```
+
+## Milestone 7 scope
+
+Implemented:
+
+Backend:
+- Created `Payslip` SQLAlchemy model with columns for employee name, month, year, basic_salary, allowances, bonuses, deductions, tax, net_salary, status, and PDF file path.
+- Created Pydantic schemas validating create, update, and response data formats.
+- Implemented `PayrollRepository` handling creation, paginated lists, deletes, and aggregated ledger statistics (total disbursements, taxes collected, counts).
+- Implemented `PayrollService` executing net salary logic and generating downloadable PDF payslips using ReportLab with a clean, grid-based layout template.
+- Implemented API endpoints under `/api/v1/payroll/*` (generate, me, history, update, delete, stats, and download PDF).
+- Generated database schema migrations using Alembic and applied it cleanly.
+
+Frontend:
+- Implemented `payroll.js` API helper mapping all payroll endpoints and handling binary blob downloads in React.
+- Refactored `EmployeeDashboard.jsx` to fetch real payroll history from `/api/v1/payroll/me` and download real ReportLab PDF paystubs.
+- Updated the "Salary" tab in the employee detail modal to show bonuses and tax along with net take-home salary calculations.
+- Integrated a comprehensive **Payroll System Center** modal inside `HRDashboard.jsx` that enables:
+  - Disbursing monthly salary with auto-filling employee profiles (basic, allowances, bonuses, deductions, tax) and custom adjustments.
+  - Viewing aggregate payroll ledger statistics (disbursements, taxes, count).
+  - Reviewing global historic payroll ledger table with options to download PDF payslips, edit existing payslip values, or void records.
+- Added bonuses and tax fields to the onboarding form and edit employee modals inside `EmployeeDirectory.jsx`.
+
+### Payroll API
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/payroll/generate` | HR/Admin | Generate a new payslip |
+| GET | `/api/v1/payroll/me` | Authenticated | View personal payslip history |
+| GET | `/api/v1/payroll/history` | HR/Admin | List and filter all payslips |
+| PUT | `/api/v1/payroll/{id}` | HR/Admin | Update payslip fields or status |
+| DELETE | `/api/v1/payroll/{id}` | HR/Admin | Delete/void a payslip |
+| GET | `/api/v1/payroll/stats` | HR/Admin | View payroll statistics |
+| GET | `/api/v1/payroll/{id}/pdf` | Authenticated | Download ReportLab PDF payslip |
+
 

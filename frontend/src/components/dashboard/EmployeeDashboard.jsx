@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
 import { employeeApi } from '../../api/employee';
 import { attendanceApi } from '../../api/attendance';
+import { payrollApi } from '../../api/payroll';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Clock, Calendar, DollarSign, Bell, LogOut, User, 
@@ -105,10 +106,21 @@ const EmployeeDashboard = () => {
     }
   };
 
+  const fetchPayroll = async () => {
+    if (!user) return;
+    try {
+      const data = await payrollApi.me(1, 100);
+      setPayroll(data.items || []);
+    } catch (err) {
+      console.error("Failed to fetch payroll history:", err);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadData();
       fetchProfile();
+      fetchPayroll();
     }
   }, [user]);
 
@@ -269,47 +281,19 @@ const EmployeeDashboard = () => {
     loadData();
   };
 
-  const handleDownloadPayslip = (slip) => {
-    // Simulate payslip download
-    const content = `
------------------------------------------
-           PEOPLEFLOW HRMS
-              PAY SLIP
------------------------------------------
-Employee ID:   ${user.employee_id}
-Name:          ${user.full_name}
-Role:          ${user.role.toUpperCase()}
-Month/Year:    ${slip.month} ${slip.year}
------------------------------------------
-Earnings:
-  Base Pay:    $${slip.basePay.toFixed(2)}
-  Allowances:  $${slip.allowances.toFixed(2)}
-
-Deductions:
-  Tax/Others:  $${slip.deductions.toFixed(2)}
------------------------------------------
-NET SALARY:    $${slip.netSalary.toFixed(2)}
------------------------------------------
-Status:        ${slip.status.toUpperCase()}
-Generated on:  ${new Date().toLocaleDateString()}
------------------------------------------
-`;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `payslip_${slip.month.toLowerCase()}_${slip.year}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    mockState.addNotification({
-      userId: user.employee_id,
-      title: 'Payslip Downloaded',
-      message: `Downloaded payslip for ${slip.month} ${slip.year}.`
-    });
-    loadData();
+  const handleDownloadPayslip = async (slip) => {
+    try {
+      await payrollApi.downloadPdf(slip.id, `payslip_${slip.month.toLowerCase()}_${slip.year}.pdf`);
+      mockState.addNotification({
+        userId: user.employee_id,
+        title: 'Payslip Downloaded',
+        message: `Downloaded PDF payslip for ${slip.month} ${slip.year}.`
+      });
+      loadData();
+    } catch (err) {
+      console.error("Failed to download PDF payslip:", err);
+      alert("Failed to download PDF payslip. Please try again.");
+    }
   };
 
   // Recharts Formatters
@@ -695,7 +679,7 @@ Generated on:  ${new Date().toLocaleDateString()}
               <div key={slip.id} className="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl hover:border-indigo-100 hover:bg-indigo-50/5 transition">
                 <div>
                   <h4 className="font-bold text-gray-800">{slip.month} {slip.year}</h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Net Pay: <strong className="text-indigo-600">${slip.netSalary.toFixed(2)}</strong></p>
+                  <p className="text-xs text-gray-400 mt-0.5">Net Pay: <strong className="text-indigo-600">${slip.net_salary.toFixed(2)}</strong></p>
                 </div>
                 <button
                   onClick={() => handleDownloadPayslip(slip)}
@@ -1005,20 +989,34 @@ Generated on:  ${new Date().toLocaleDateString()}
                   <h5 className="font-bold text-slate-800 text-sm mb-3">Compensation Structure</h5>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Base Salary</span>
-                    <span className="font-bold text-slate-800">${(profileData?.profile?.base_salary || 0).toLocaleString()}</span>
+                    <span className="font-bold text-slate-800">${(profileData?.profile?.base_salary || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Allowances</span>
-                    <span className="font-bold text-green-600">+ ${(profileData?.profile?.allowances || 0).toLocaleString()}</span>
+                    <span className="font-bold text-green-600">+ ${(profileData?.profile?.allowances || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Bonuses</span>
+                    <span className="font-bold text-green-600">+ ${(profileData?.profile?.bonuses || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Deductions</span>
-                    <span className="font-bold text-red-500">- ${(profileData?.profile?.deductions || 0).toLocaleString()}</span>
+                    <span className="font-bold text-red-500">- ${(profileData?.profile?.deductions || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Tax</span>
+                    <span className="font-bold text-red-500">- ${(profileData?.profile?.tax || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                   </div>
                   <div className="flex justify-between pt-2">
-                    <span className="font-bold text-slate-800">Net Estimated Salary</span>
+                    <span className="font-bold text-slate-850">Net Take-Home Salary</span>
                     <span className="font-black text-indigo-600 text-base">
-                      ${((profileData?.profile?.base_salary || 0) + (profileData?.profile?.allowances || 0) - (profileData?.profile?.deductions || 0)).toLocaleString()}
+                      ${(
+                        (profileData?.profile?.base_salary || 0) + 
+                        (profileData?.profile?.allowances || 0) + 
+                        (profileData?.profile?.bonuses || 0) - 
+                        (profileData?.profile?.deductions || 0) - 
+                        (profileData?.profile?.tax || 0)
+                      ).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </span>
                   </div>
                 </div>

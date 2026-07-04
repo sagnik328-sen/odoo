@@ -3,6 +3,7 @@ from app.models.user import User, UserRole
 from app.models.employee import EmployeeProfile, EmployeeDocument
 from app.models.attendance import Attendance, AttendanceCorrection, AttendanceStatus, ApprovalStatus
 from app.models.leave import LeaveRequest, LeaveStatus, LeaveType, Notification, NotificationType
+from app.models.payroll import Payslip, PayslipStatus
 
 __all__ = [
     "User",
@@ -18,6 +19,8 @@ __all__ = [
     "LeaveType",
     "Notification",
     "NotificationType",
+    "Payslip",
+    "PayslipStatus",
 ]
 
 

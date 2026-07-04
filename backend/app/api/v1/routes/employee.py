@@ -138,7 +138,9 @@ def create_employee(
         joining_date=employee_in.joining_date,
         base_salary=employee_in.base_salary,
         allowances=employee_in.allowances,
-        deductions=employee_in.deductions
+        bonuses=employee_in.bonuses,
+        deductions=employee_in.deductions,
+        tax=employee_in.tax
     )
     emp_repo.create_profile(profile)
 
@@ -211,8 +213,12 @@ def update_employee(
             profile.base_salary = employee_in.base_salary
         if employee_in.allowances is not None:
             profile.allowances = employee_in.allowances
+        if employee_in.bonuses is not None:
+            profile.bonuses = employee_in.bonuses
         if employee_in.deductions is not None:
             profile.deductions = employee_in.deductions
+        if employee_in.tax is not None:
+            profile.tax = employee_in.tax
 
     emp_repo.update_profile(profile)
 
