@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
+import EmployeeDirectory from './EmployeeDirectory';
 import { 
   Users, Calendar, DollarSign, Bell, LogOut, User, 
   Plus, Check, X, ClipboardList, CheckCircle, AlertCircle, 
@@ -448,6 +449,11 @@ const HRDashboard = () => {
         </div>
       </div>
 
+      {/* Employee Directory Section */}
+      <div className="mt-8 pt-6 border-t border-slate-200">
+        <EmployeeDirectory currentUser={user} />
+      </div>
+
       {/* Logout / Confirmation Section */}
       <div className="rounded-2xl border border-red-50 bg-red-50/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
@@ -461,106 +467,6 @@ const HRDashboard = () => {
           <LogOut className="h-4 w-4" /> Sign Out
         </button>
       </div>
-
-      {/* Modal - Onboard Employee */}
-      {isRegisterModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-emerald-600" />
-                Register New Employee
-              </h3>
-              <button 
-                onClick={() => setIsRegisterModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleRegisterEmployee} className="mt-4 space-y-4">
-              {registerError && (
-                <div className="p-3 bg-red-50 text-red-700 border border-red-150 rounded-xl text-xs flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  {registerError}
-                </div>
-              )}
-              {registerSuccess && (
-                <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded-xl text-xs flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 shrink-0" />
-                  {registerSuccess}
-                </div>
-              )}
-              
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Employee ID</label>
-                <input
-                  type="text"
-                  placeholder="e.g. EMP-009"
-                  value={newEmpId}
-                  onChange={(e) => setNewEmpId(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Clara Oswald"
-                  value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email Address</label>
-                <input
-                  type="email"
-                  placeholder="e.g. clara@peopleflow.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">System Role</label>
-                <select
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                >
-                  <option value="employee">Employee</option>
-                  <option value="hr">HR Manager</option>
-                  <option value="admin">Administrator</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold text-white transition shadow-sm"
-                >
-                  Onboard Employee
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Modal - Process Payroll */}
       {isPayrollModalOpen && (

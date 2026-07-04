@@ -39,6 +39,13 @@ def create_application() -> FastAPI:
     )
     register_exception_handlers(application)
     application.include_router(api_router, prefix=settings.api_v1_prefix)
+
+    # Mount static files for local uploads
+    import os
+    from fastapi.staticfiles import StaticFiles
+    os.makedirs("uploads", exist_ok=True)
+    application.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
     return application
 
 

@@ -1,11 +1,15 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 from uuid import uuid4, UUID
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, String, Boolean, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
+
+if TYPE_CHECKING:
+    from app.models.employee import EmployeeProfile
 
 
 class UserRole(str, PyEnum):
@@ -27,3 +31,14 @@ class User(Base):
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    profile: Mapped[Optional["EmployeeProfile"]] = relationship(
+        "EmployeeProfile",
+        primaryjoin="User.id == EmployeeProfile.user_id",
+        foreign_keys="[EmployeeProfile.user_id]",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+
+

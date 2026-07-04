@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
+import EmployeeDirectory from './EmployeeDirectory';
 import { 
   ShieldAlert, Settings, Bell, LogOut, User, 
   Plus, Check, X, ClipboardList, Database, Heart,
@@ -251,65 +252,9 @@ const AdminDashboard = () => {
 
       {/* User Management & Role Distribution Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* User Roles Management Card */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-50">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span className="p-2 bg-purple-50 rounded-lg text-purple-600">
-                <Settings className="h-5 w-5" />
-              </span>
-              User Authorization Directory
-            </h3>
-            <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-0.5 rounded-full">
-              System Control
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-500">
-              <thead className="bg-gray-50 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-xl">User details</th>
-                  <th className="px-4 py-3">Employee ID</th>
-                  <th className="px-4 py-3">Current Role</th>
-                  <th className="px-4 py-3 rounded-r-xl">Set Authorization</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {usersList.map(u => (
-                  <tr key={u.id} className="hover:bg-gray-50/50 transition">
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-gray-800">{u.full_name}</div>
-                      <div className="text-xs text-gray-400">{u.email}</div>
-                    </td>
-                    <td className="px-4 py-3.5 text-xs font-mono">{u.employee_id}</td>
-                    <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${
-                        u.role === 'admin' 
-                          ? 'bg-fuchsia-50 text-fuchsia-700' 
-                          : u.role === 'hr' 
-                          ? 'bg-emerald-50 text-emerald-700' 
-                          : 'bg-indigo-50 text-indigo-700'
-                      }`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className="rounded-lg border border-gray-200 px-2 py-1 text-xs focus:border-purple-500 focus:outline-none bg-white font-medium"
-                      >
-                        <option value="employee">Employee</option>
-                        <option value="hr">HR Manager</option>
-                        <option value="admin">Administrator</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* User Roles Management Directory (real backend database-driven) */}
+        <div className="lg:col-span-2">
+          <EmployeeDirectory currentUser={user} />
         </div>
 
         {/* Role Distribution Chart & Profile Card */}

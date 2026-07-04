@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 3 is complete. This repository contains the project foundation, authentication system, and role-specific dashboards for Employee, HR, and Admin users with real-time interactive localStorage synchronization.
+> **Current status:** Milestone 4 is complete. This repository contains the project foundation, authentication system, role-specific dashboards, and a complete employee profile and directory management system with local avatar and document uploads.
 
 ## Technology stack
 
@@ -342,6 +342,30 @@ Frontend:
 - Created `mockState.js` utility:
   - Centralized state persistence in `localStorage` for leaves, attendance, payroll, notifications, and user directory.
   - Enables cross-dashboard interactivity (e.g. employee requesting leave is immediately visible to and actioned by HR/Admin).
+
+## Milestone 4 scope
+
+Implemented:
+
+Backend:
+- Created `EmployeeProfile` and `EmployeeDocument` SQLAlchemy models with proper cascade deletes and foreign keys (handling manager reference dynamically).
+- Added new database tables and generated schema migration script with Alembic.
+- Implemented `EmployeeRepository` to manage database operations, supporting paginated lists, text-based search, and filtering by department/designation/role.
+- Created `employee` API routes:
+  - `GET /api/v1/employees` - Searchable, filterable, and paginated roster (HR/Admin only).
+  - `POST /api/v1/employees font-medium` - Onboard new employee user + profile (HR/Admin only).
+  - `GET /api/v1/employees/{user_id}` - Fetch details of an employee (Self/HR/Admin).
+  - `PUT /api/v1/employees/{user_id}` - Update profile. Employees can edit only phone/address; HR/Admin can edit all fields (including designation, department, salary).
+  - `DELETE /api/v1/employees/{user_id}` - Delete user account and profile, cleaning up local files (HR/Admin only).
+  - `POST /api/v1/employees/{user_id}/upload-avatar` - Upload profile picture to local `uploads/` folder.
+  - `POST /api/v1/employees/{user_id}/upload-document` - Upload document to local `uploads/` folder.
+  - `DELETE /api/v1/employees/{user_id}/documents/{document_id}` - Delete document record and file.
+- Mounted the `uploads/` folder as a static files route in `main.py` to serve avatars and uploaded files.
+
+Frontend:
+- Implemented `employee.js` API client for communication with backend endpoints.
+- Updated `EmployeeDashboard.jsx` to fetch real profile information and enable profile picture and document uploads. Added tabs for Personal Details (editable), Job Details, Salary, and Documents.
+- Created and integrated a reusable, robust `EmployeeDirectory.jsx` component inside `HRDashboard.jsx` and `AdminDashboard.jsx`. It supports real-time search, filters, pagination, profile view modals, full details editing, document uploading/management, and account deletion.
 
 ## License
 

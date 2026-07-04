@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
+import { employeeApi } from '../../api/employee';
 import { 
   Clock, Calendar, DollarSign, Bell, LogOut, User, 
   Plus, CheckCircle, AlertCircle, CalendarRange, Download, 
-  TrendingUp, Play, Square, RefreshCw, Check, X
+  TrendingUp, Play, Square, RefreshCw, Check, X,
+  Upload, Trash2, Edit2, Briefcase, CreditCard, FileText, File, Eye
 } from 'lucide-react';
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
@@ -27,6 +29,19 @@ const EmployeeDashboard = () => {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
+  // Profile specific states
+  const [profileData, setProfileData] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [activeProfileTab, setActiveProfileTab] = useState('personal');
+  const [editMode, setEditMode] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [docName, setDocName] = useState('');
+  const [docFile, setDocFile] = useState(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
   // Leave Form
   const [leaveType, setLeaveType] = useState('Vacation');
   const [startDate, setStartDate] = useState('');
@@ -45,9 +60,112 @@ const EmployeeDashboard = () => {
     setNotifications(mockState.getNotifications(user.employee_id, user.role));
   };
 
+  const fetchProfile = async () => {
+    if (!user) return;
+    try {
+      setLoadingProfile(true);
+      const data = await employeeApi.getEmployee(user.id);
+      setProfileData(data);
+      setPhone(data.profile?.phone || '');
+      setAddress(data.profile?.address || '');
+    } catch (err) {
+      console.error("Failed to fetch employee profile:", err);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
   useEffect(() => {
-    loadData();
+    if (user) {
+      loadData();
+      fetchProfile();
+    }
   }, [user]);
+
+  // Profile Action Helpers
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setProfileError('');
+    try {
+      const updated = await employeeApi.updateEmployee(user.id, { phone, address });
+      setProfileData(updated);
+      setEditMode(false);
+      mockState.addNotification({
+        userId: user.employee_id,
+        title: 'Profile Updated',
+        message: 'Your personal address and phone number were successfully updated.'
+      });
+      loadData();
+    } catch (err) {
+      setProfileError(err.response?.data?.detail || 'Failed to update profile');
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setProfileError('');
+    try {
+      setUploadingAvatar(true);
+      await employeeApi.uploadAvatar(user.id, file);
+      await fetchProfile();
+      mockState.addNotification({
+        userId: user.employee_id,
+        title: 'Avatar Updated',
+        message: 'Your profile picture was successfully uploaded.'
+      });
+      loadData();
+    } catch (err) {
+      setProfileError('Failed to upload profile picture');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleUploadDoc = async (e) => {
+    e.preventDefault();
+    if (!docName || !docFile) return;
+    setProfileError('');
+    try {
+      setUploadingDoc(true);
+      await employeeApi.uploadDocument(user.id, docName, docFile);
+      setDocName('');
+      setDocFile(null);
+      await fetchProfile();
+      mockState.addNotification({
+        userId: user.employee_id,
+        title: 'Document Uploaded',
+        message: `Document "${docName}" uploaded successfully.`
+      });
+      loadData();
+    } catch (err) {
+      setProfileError('Failed to upload document');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleDeleteDoc = async (docId) => {
+    if (!window.confirm("Are you sure you want to delete this document?")) return;
+    setProfileError('');
+    try {
+      await employeeApi.deleteDocument(user.id, docId);
+      await fetchProfile();
+      mockState.addNotification({
+        userId: user.employee_id,
+        title: 'Document Deleted',
+        message: 'Your document was successfully removed.'
+      });
+      loadData();
+    } catch (err) {
+      setProfileError('Failed to delete document');
+    }
+  };
+
+  const getAvatarUrl = (path) => {
+    if (!path) return null;
+    return path.startsWith('http') ? path : `http://localhost:8000${path}`;
+  };
 
   // Timer for Clock-In
   useEffect(() => {
@@ -283,7 +401,11 @@ Generated on:  ${new Date().toLocaleDateString()}
               My Profile
             </h3>
             <button 
-              onClick={() => setIsProfileModalOpen(true)}
+              onClick={() => {
+                setActiveProfileTab('personal');
+                setEditMode(false);
+                setIsProfileModalOpen(true);
+              }}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
             >
               Details
@@ -291,12 +413,20 @@ Generated on:  ${new Date().toLocaleDateString()}
           </div>
           <div className="mt-4 space-y-4">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-inner">
-                {user?.full_name?.split(' ').map(n => n[0]).join('')}
-              </div>
+              {profileData?.profile?.profile_picture ? (
+                <img 
+                  src={getAvatarUrl(profileData.profile.profile_picture)} 
+                  alt={user?.full_name} 
+                  className="h-16 w-16 rounded-full object-cover border border-slate-200 shadow-inner"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-inner">
+                  {user?.full_name?.split(' ').map(n => n[0]).join('')}
+                </div>
+              )}
               <div>
                 <h4 className="font-bold text-gray-900">{user?.full_name}</h4>
-                <p className="text-sm text-gray-500 capitalize">{user?.role} - Product Dev</p>
+                <p className="text-sm text-gray-500 capitalize">{profileData?.profile?.designation || 'Employee'} - {profileData?.profile?.department || 'Operations'}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
@@ -316,7 +446,11 @@ Generated on:  ${new Date().toLocaleDateString()}
               </div>
               <div>
                 <span className="text-gray-400 block text-xs uppercase tracking-wider">Join Date</span>
-                <strong className="text-gray-700">June 01, 2026</strong>
+                <strong className="text-gray-700">
+                  {profileData?.profile?.joining_date 
+                    ? new Date(profileData.profile.joining_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+                    : 'June 01, 2026'}
+                </strong>
               </div>
             </div>
           </div>
@@ -675,56 +809,301 @@ Generated on:  ${new Date().toLocaleDateString()}
 
       {/* Modal - Profile Details */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">Profile Details</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-gray-150">
+              <div>
+                <h3 className="text-xl font-extrabold text-gray-900">Employee Profile</h3>
+                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-0.5">{user?.full_name} &bull; ID: {user?.employee_id}</p>
+              </div>
               <button 
                 onClick={() => setIsProfileModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-gray-400 hover:text-gray-650 transition p-1 bg-slate-50 hover:bg-slate-100 rounded-lg"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="mt-4 space-y-4">
-              <div className="flex flex-col items-center py-4 border-b border-gray-50">
-                <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-500 text-white flex items-center justify-center font-bold text-2xl shadow-md mb-2">
-                  {user?.full_name?.split(' ').map(n => n[0]).join('')}
-                </div>
-                <h4 className="font-extrabold text-xl text-gray-900">{user?.full_name}</h4>
-                <p className="text-xs text-gray-400 capitalize font-medium">Role: {user?.role}</p>
-              </div>
 
-              <div className="space-y-3.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Employee ID</span>
-                  <span className="font-bold text-gray-800">{user?.employee_id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Email Address</span>
-                  <span className="font-bold text-gray-800">{user?.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Department</span>
-                  <span className="font-bold text-gray-800">Product Development</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Designation</span>
-                  <span className="font-bold text-gray-800">Senior Frontend Engineer</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Manager</span>
-                  <span className="font-bold text-gray-800">Alice Williams (Admin)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Joining Date</span>
-                  <span className="font-bold text-gray-800">June 01, 2026</span>
-                </div>
+            {profileError && (
+              <div className="mt-4 p-3 bg-red-50 text-red-700 border border-red-150 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {profileError}
               </div>
+            )}
 
+            {/* Profile Summary Card with Avatar Uploader */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div className="relative group shrink-0">
+                {profileData?.profile?.profile_picture ? (
+                  <img 
+                    src={getAvatarUrl(profileData.profile.profile_picture)} 
+                    alt={user?.full_name} 
+                    className="h-20 w-20 rounded-full object-cover border-2 border-indigo-100 shadow-md"
+                  />
+                ) : (
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-indigo-500 to-teal-500 text-white flex items-center justify-center font-black text-2xl shadow-md">
+                    {user?.full_name?.split(' ').map(n => n[0]).join('')}
+                  </div>
+                )}
+                <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Upload className="h-4 w-4" />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarChange} 
+                    className="hidden" 
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-white/75 rounded-full flex items-center justify-center">
+                    <RefreshCw className="h-5 w-5 animate-spin text-indigo-600" />
+                  </div>
+                )}
+              </div>
+              <div className="text-center sm:text-left">
+                <h4 className="font-extrabold text-xl text-slate-800">{user?.full_name}</h4>
+                <p className="text-sm font-semibold text-indigo-600">{profileData?.profile?.designation || 'Software Engineer'}</p>
+                <p className="text-xs text-slate-400 capitalize">{user?.role} portal &bull; {profileData?.profile?.department || 'Development'}</p>
+              </div>
+            </div>
+
+            {/* Tabs Navigation */}
+            <div className="mt-5 flex border-b border-gray-150">
+              {[
+                { id: 'personal', name: 'Personal', icon: User },
+                { id: 'job', name: 'Job Details', icon: Briefcase },
+                { id: 'salary', name: 'Salary', icon: CreditCard },
+                { id: 'documents', name: 'Documents', icon: FileText }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveProfileTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold border-b-2 transition uppercase tracking-wider ${
+                    activeProfileTab === tab.id 
+                      ? 'border-indigo-600 text-indigo-600' 
+                      : 'border-transparent text-gray-400 hover:text-gray-650'
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{tab.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Tab Contents */}
+            <div className="mt-4 min-h-48">
+              {/* Tab 1: Personal (Editable) */}
+              {activeProfileTab === 'personal' && (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h5 className="font-bold text-slate-800 text-sm">Personal Contacts & Address</h5>
+                    {!editMode ? (
+                      <button 
+                        onClick={() => setEditMode(true)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-850"
+                      >
+                        <Edit2 className="h-3 w-3" /> Edit Details
+                      </button>
+                    ) : (
+                      <span className="text-xs text-amber-600 font-bold uppercase">Editing Mode</span>
+                    )}
+                  </div>
+
+                  {!editMode ? (
+                    <div className="space-y-3.5 text-sm">
+                      <div className="flex justify-between border-b border-slate-50 pb-2">
+                        <span className="text-slate-400">Email Address</span>
+                        <span className="font-bold text-slate-800">{user?.email}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-slate-50 pb-2">
+                        <span className="text-slate-400">Phone Number</span>
+                        <span className="font-bold text-slate-800">{profileData?.profile?.phone || 'Not Provided'}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-slate-50 pb-2">
+                        <span className="text-slate-400">Residential Address</span>
+                        <span className="font-bold text-slate-800 text-right max-w-xs">{profileData?.profile?.address || 'Not Provided'}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleUpdateProfile} className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone Number</label>
+                        <input
+                          type="text"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                          placeholder="e.g. +1 555-0199"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Residential Address</label>
+                        <textarea
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none h-16 resize-none"
+                          placeholder="Street, City, Country"
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditMode(false)}
+                          className="flex-1 py-2 rounded-lg border border-gray-200 text-xs font-bold text-gray-500 hover:bg-gray-50 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition shadow-sm"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* Tab 2: Job Details */}
+              {activeProfileTab === 'job' && (
+                <div className="space-y-3.5 text-sm">
+                  <h5 className="font-bold text-slate-800 text-sm mb-3">Employment Details</h5>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Department</span>
+                    <span className="font-bold text-slate-800">{profileData?.profile?.department || 'Operations'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Designation</span>
+                    <span className="font-bold text-slate-800">{profileData?.profile?.designation || 'Staff'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Direct Manager</span>
+                    <span className="font-bold text-slate-800">{profileData?.profile?.manager_name || 'HR Department'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Joining Date</span>
+                    <span className="font-bold text-slate-800">
+                      {profileData?.profile?.joining_date 
+                        ? new Date(profileData.profile.joining_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+                        : 'June 01, 2026'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Salary */}
+              {activeProfileTab === 'salary' && (
+                <div className="space-y-3.5 text-sm">
+                  <h5 className="font-bold text-slate-800 text-sm mb-3">Compensation Structure</h5>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Base Salary</span>
+                    <span className="font-bold text-slate-800">${(profileData?.profile?.base_salary || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Allowances</span>
+                    <span className="font-bold text-green-600">+ ${(profileData?.profile?.allowances || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Deductions</span>
+                    <span className="font-bold text-red-500">- ${(profileData?.profile?.deductions || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between pt-2">
+                    <span className="font-bold text-slate-800">Net Estimated Salary</span>
+                    <span className="font-black text-indigo-600 text-base">
+                      ${((profileData?.profile?.base_salary || 0) + (profileData?.profile?.allowances || 0) - (profileData?.profile?.deductions || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 4: Documents */}
+              {activeProfileTab === 'documents' && (
+                <div>
+                  <h5 className="font-bold text-slate-800 text-sm mb-3">My Uploaded Documents</h5>
+
+                  {/* Documents List */}
+                  <div className="space-y-2 max-h-32 overflow-y-auto mb-4 pr-1">
+                    {(!profileData?.profile?.documents || profileData.profile.documents.length === 0) ? (
+                      <div className="text-center py-4 text-gray-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        No uploaded documents found.
+                      </div>
+                    ) : (
+                      profileData.profile.documents.map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs">
+                          <div className="flex items-center gap-2 truncate">
+                            <File className="h-4 w-4 shrink-0 text-slate-400" />
+                            <span className="font-bold text-slate-700 truncate">{doc.name}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => window.open(getAvatarUrl(doc.file_path))}
+                              className="p-1 hover:bg-indigo-50 hover:text-indigo-600 rounded transition"
+                              title="Download/View File"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDoc(doc.id)}
+                              className="p-1 hover:bg-red-50 hover:text-red-600 rounded transition"
+                              title="Delete File"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Upload Form */}
+                  <form onSubmit={handleUploadDoc} className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder="Document Name (e.g. ID, CV)"
+                      value={docName}
+                      onChange={(e) => setDocName(e.target.value)}
+                      className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        id="profile-doc-file"
+                        onChange={(e) => setDocFile(e.target.files[0])}
+                        className="hidden"
+                      />
+                      <label 
+                        htmlFor="profile-doc-file"
+                        className="cursor-pointer border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-650 flex items-center justify-center shrink-0"
+                      >
+                        {docFile ? "File Selected" : "Select File"}
+                      </label>
+                      <button
+                        type="submit"
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1 shadow-sm shrink-0"
+                        disabled={uploadingDoc}
+                      >
+                        {uploadingDoc ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="h-3.5 w-3.5" /> Upload
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-slate-100">
               <button
                 onClick={() => setIsProfileModalOpen(false)}
-                className="w-full py-2.5 mt-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-700 transition"
+                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition"
               >
                 Close View
               </button>
