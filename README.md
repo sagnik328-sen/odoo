@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 8 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, and an integrated real-time notification engine with automatic triggers and reminder tools.
+> **Current status:** Milestone 9 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, an integrated real-time notification engine with automatic triggers and reminder tools, and a comprehensive reports & analytics system with CSV, Excel, and PDF export capabilities.
 
 ## Technology stack
 
@@ -17,7 +17,7 @@ PeopleFlow is a full-stack Human Resource Management System for employee records
 | Forms | React Hook Form |
 | Charts | Recharts |
 | Calendar | React Big Calendar |
-| Reports (planned) | ReportLab, OpenPyXL |
+| Reports | ReportLab, OpenPyXL |
 | Version control | Git and GitHub |
 
 ## Architecture
@@ -400,32 +400,6 @@ Frontend:
   - Monthly calendar view (placeholder)
 - Updated `EmployeeDashboard.jsx` to use real attendance API instead of mock data.
 
-## Milestone 9 scope
-
-Implemented:
-
-Backend:
-- Created `ReportsService` for generating reports and analytics
-- Added `reports.py` schemas for all report types
-- Implemented export utilities for CSV, Excel (using openpyxl), and PDF (using reportlab)
-- Added reports API routes for:
-  - Dashboard summary
-  - Attendance reports with filters
-  - Leave reports (placeholder)
-  - Payroll reports (placeholder)
-  - Employee reports
-  - Analytics endpoints
-  - Export endpoints for CSV/Excel/PDF
-- Added role-based access control for reports (employees can only access their own data)
-
-Frontend:
-- Created `reports.js` API client
-- Implemented reusable reports components:
-  - `StatisticsCard` for displaying key metrics
-  - `ExportButtons` for CSV/Excel/PDF exports
-  - `ReportTable` for displaying report data
-- Created `ReportsDashboard` page with summary cards and quick links
-
 ## Milestone 6 scope
 
 Implemented:
@@ -530,6 +504,33 @@ Frontend:
 | PUT | `/api/v1/notifications/{id}/read` | Authenticated | Mark a notification as read |
 | PUT | `/api/v1/notifications/read-all` | Authenticated | Mark all unread notifications as read |
 | POST | `/api/v1/attendance/remind-all` | HR/Admin | Trigger clock-in reminders to unchecked-in staff |
+
+
+## Milestone 9 scope
+
+Implemented:
+
+Backend:
+- Created `ReportsService` for generating reports and analytics
+- Added `reports.py` schemas for all report types
+- Implemented export utilities for CSV, Excel (using openpyxl), and PDF (using reportlab)
+- Added reports API routes for:
+  - Dashboard summary
+  - Attendance reports with filters
+  - Leave reports (placeholder)
+  - Payroll reports (placeholder)
+  - Employee reports
+  - Analytics endpoints
+  - Export endpoints for CSV/Excel/PDF
+- Added role-based access control for reports (employees can only access their own data)
+
+Frontend:
+- Created `reports.js` API client
+- Implemented reusable reports components:
+  - `StatisticsCard` for displaying key metrics
+  - `ExportButtons` for CSV/Excel/PDF exports
+  - `ReportTable` for displaying report data
+- Created `ReportsDashboard` page with summary cards and quick links
 
 ## License
 
