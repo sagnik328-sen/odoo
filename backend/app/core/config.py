@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
     database_url: str = "sqlite:///./hrms.db"
-    backend_cors_origins: list[AnyHttpUrl] = [AnyHttpUrl("http://localhost:5173")]
+    backend_cors_origins: list[AnyHttpUrl] = [
+        AnyHttpUrl("http://localhost:5173"),
+        AnyHttpUrl("http://localhost:5174")
+    ]  # Allow both 5173 and 5174
     log_level: str = "INFO"
     
     # JWT Settings

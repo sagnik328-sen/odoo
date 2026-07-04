@@ -2,17 +2,13 @@
 
 PeopleFlow is a full-stack Human Resource Management System for authentication, employee profiles, attendance, leave, payroll, notifications, and workforce reporting.
 
-<<<<<<< HEAD
-> **Current status:** Milestone 10 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, an integrated real-time notification engine, a comprehensive reports & analytics system, and a Settings & User Management module with company profile configuration, leave policies, shift working hours, a holiday calendar, role authorization matrix, password changing, profile updates, and Dark Mode.
-
-=======
 > **Status:** Milestone 11 complete — release hardening, integration repair, performance optimization, automated testing, OpenAPI documentation, and final project documentation.
 
 ## Screenshots
 
 | Desktop sign-in | Mobile sign-in |
 | --- | --- |
-| ![PeopleFlow desktop sign-in](docs/screenshots/login-desktop.png) | ![PeopleFlow mobile sign-in](docs/screenshots/login-mobile.png) |
+| ![PeopleFlow desktop sign-in](docs/screenshots/login-desktop.png) | ![PeopleFlow mobile sign-in](docs/screenshots/login-mobile.png)
 
 ## Features
 
@@ -28,7 +24,6 @@ PeopleFlow is a full-stack Human Resource Management System for authentication, 
 - CSV, Excel, and PDF report exports
 - Request IDs, response timing, structured application logging, and consistent errors
 - Interactive Swagger/OpenAPI documentation
->>>>>>> b5b4a85 (Testing, Optimization & Documentation)
 
 ## Technology stack
 
@@ -344,11 +339,4 @@ Frontend:
 
 ## License
 
-<<<<<<< HEAD
-No license has been selected yet.
-
-
-
-=======
 No license has been selected. Add one before public distribution.
->>>>>>> b5b4a85 (Testing, Optimization & Documentation)

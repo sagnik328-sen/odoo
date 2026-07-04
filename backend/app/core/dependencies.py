@@ -75,7 +75,6 @@ class RoleChecker:
         return current_user
 
 
-<<<<<<< HEAD
 class PermissionChecker:
     def __init__(self, permission_name: str):
         self.permission_name = permission_name
@@ -95,17 +94,6 @@ class PermissionChecker:
         return current_user
 
 
-def require_roles(allowed_roles: list[str]):
-    role_enums = []
-    for r in allowed_roles:
-        try:
-            role_enums.append(UserRole(r))
-        except ValueError:
-            pass
-    return RoleChecker(role_enums)
-
-
-=======
 def require_roles(roles: list[str]) -> RoleChecker:
     """Create a FastAPI dependency that allows only the supplied role values."""
     try:
@@ -113,4 +101,3 @@ def require_roles(roles: list[str]) -> RoleChecker:
     except ValueError as exc:
         raise RuntimeError(f"Unknown role configured: {roles}") from exc
     return RoleChecker(allowed_roles)
->>>>>>> b5b4a85 (Testing, Optimization & Documentation)

@@ -1,14 +1,6 @@
 import { useAuth } from '../context/AuthContext';
-<<<<<<< HEAD
-import EmployeeDashboard from '../components/dashboard/EmployeeDashboard';
-import HRDashboard from '../components/dashboard/HRDashboard';
-import AdminDashboard from '../components/dashboard/AdminDashboard';
-import { LogOut, User, Activity, Menu, X, Settings, Moon, Sun } from 'lucide-react';
-import { useState, useEffect } from 'react';
-=======
-import { lazy, Suspense, useState } from 'react';
-import { LogOut, User, Activity, Menu, X } from 'lucide-react';
->>>>>>> b5b4a85 (Testing, Optimization & Documentation)
+import { lazy, Suspense, useState, useEffect } from 'react';
+import { LogOut, User, Activity, Menu, X, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DashboardErrorBoundary from '../components/DashboardErrorBoundary';
 
