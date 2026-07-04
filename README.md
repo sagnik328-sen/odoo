@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 2 is complete. This repository contains the project foundation, authentication system with JWT access/refresh tokens, and responsive auth pages (login, register, forgot password, reset password).
+> **Current status:** Milestone 3 is complete. This repository contains the project foundation, authentication system, and role-specific dashboards for Employee, HR, and Admin users with real-time interactive localStorage synchronization.
 
 ## Technology stack
 
@@ -314,6 +314,34 @@ Not included in this milestone:
 - Employee, attendance, leave, payroll, notification, or report features
 - Email integration (SMTP not configured yet)
 - Persistent token blacklist (uses in-memory storage)
+
+## Milestone 3 scope
+
+Implemented:
+
+Frontend:
+- Refactored `DashboardPage.jsx` to dynamically direct authenticated users to their corresponding dashboard view based on user role (`employee`, `hr`, or `admin`).
+- Created `EmployeeDashboard.jsx` featuring:
+  - Profile Card: showing employee ID, email, designation.
+  - Work Tracker: interactive check-in/check-out with session timer.
+  - Weekly Activity Log: Recharts bar chart showing daily logged hours.
+  - Leave Requests: remaining balances (Vacation, Sick, Casual) with Recharts pie chart, recent leave lists, and a "Request Leave" form modal.
+  - Payroll Card: monthly payslip summary and text download generator.
+  - Notifications Card: unread count badges and alerts list.
+- Created `HRDashboard.jsx` featuring:
+  - Overview Metrics: total employees, pending leaves, average attendance, active shifts.
+  - Pending Leave Reviews: review, approve, or reject employee leave requests dynamically.
+  - Onboard Employee: register new employee accounts via input form modal.
+  - Run Payroll: simulation modal for processing and disbursing monthly salaries.
+  - Daily Attendance Recharts: tracking weekly attendance rate metrics.
+- Created `AdminDashboard.jsx` featuring:
+  - Directory Control: view all registered users and promote/demote user roles dynamically.
+  - Security Event Audit: real-time list of system logs (logins, role upgrades, backups).
+  - Administrative Controls: enable/disable system-wide maintenance mode lock, trigger instant database backups, and flush cache files.
+  - Role Distribution Chart: Recharts pie chart tracking role proportions.
+- Created `mockState.js` utility:
+  - Centralized state persistence in `localStorage` for leaves, attendance, payroll, notifications, and user directory.
+  - Enables cross-dashboard interactivity (e.g. employee requesting leave is immediately visible to and actioned by HR/Admin).
 
 ## License
 
