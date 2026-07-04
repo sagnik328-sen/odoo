@@ -1,19 +1,29 @@
 from datetime import timedelta
 from uuid import UUID
-from typing import Optional
-from sqlalchemy.orm import Session
+
 from fastapi import HTTPException, status
-from app.core.config import settings
+from sqlalchemy.orm import Session
+
 from app.core.logging import get_logger
 from app.models.user import User, UserRole
 from app.repositories.user import UserRepository
 from app.schemas.auth import (
-    UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ForgotPasswordRequest, ResetPasswordRequest, MessageResponse
+    ForgotPasswordRequest,
+    LoginRequest,
+    MessageResponse,
+    ResetPasswordRequest,
+    TokenResponse,
+    UserCreate,
+    UserResponse,
 )
 from app.utils.security import (
-    verify_password, get_password_hash,
-    create_access_token, create_refresh_token, decode_token
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_password_hash,
+    is_token_revoked,
+    revoke_token,
+    verify_password,
 )
 
 logger = get_logger(__name__)
@@ -23,7 +33,6 @@ class AuthService:
     def __init__(self, db: Session):
         self.db = db
         self.user_repo = UserRepository(db)
-        self.token_blacklist = set()  # Simple in-memory blacklist for local dev
 
     def register(self, user_in: UserCreate) -> UserResponse:
         # Check if email exists
@@ -54,11 +63,11 @@ class AuthService:
         user = self.user_repo.create(user)
         
         # Log verification link for local dev
-        verification_token = create_access_token(
+        _verification_token = create_access_token(
             data={"sub": str(user.id), "purpose": "email_verification"},
             expires_delta=timedelta(hours=24)
         )
-        logger.info(f"Email verification link for {user.email}: http://localhost:5173/verify-email?token={verification_token}")
+        logger.info("email_verification_token_created user_id=%s", user.id)
         
         return UserResponse.model_validate(user)
 
@@ -86,7 +95,7 @@ class AuthService:
         )
 
     def logout(self, token: str) -> MessageResponse:
-        self.token_blacklist.add(token)
+        revoke_token(token)
         return MessageResponse(message="Successfully logged out")
 
     def refresh_access_token(self, refresh_token: str) -> TokenResponse:
@@ -95,15 +104,15 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token"
-            )
+            ) from None
         
-        if refresh_token in self.token_blacklist:
+        if is_token_revoked(refresh_token):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Refresh token has been revoked"
             )
         
-        user_id_str: Optional[str] = payload.get("sub")
+        user_id_str: str | None = payload.get("sub")
         if not user_id_str:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,7 +125,7 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token"
-            )
+            ) from None
         
         user = self.user_repo.get_by_id(user_id)
         if not user:
@@ -129,7 +138,7 @@ class AuthService:
         new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
         
         # Blacklist old refresh token
-        self.token_blacklist.add(refresh_token)
+        revoke_token(refresh_token)
         
         return TokenResponse(
             access_token=new_access_token,
@@ -141,11 +150,11 @@ class AuthService:
         user = self.user_repo.get_by_email(request.email)
         if user:
             # Generate reset token and log it for local dev
-            reset_token = create_access_token(
+            _reset_token = create_access_token(
                 data={"sub": str(user.id), "purpose": "password_reset"},
                 expires_delta=timedelta(hours=1)
             )
-            logger.info(f"Password reset link for {user.email}: http://localhost:5173/reset-password?token={reset_token}")
+            logger.info("password_reset_token_created user_id=%s", user.id)
         
         return MessageResponse(message="If an account with that email exists, a reset link has been sent")
 
@@ -157,12 +166,12 @@ class AuthService:
                 detail="Invalid or expired token"
             )
         
-        user_id_str: Optional[str] = payload.get("sub")
+        user_id_str: str | None = payload.get("sub")
         if not user_id_str:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid token"
-            )
+            ) from None
         
         try:
             user_id = UUID(user_id_str)
@@ -170,7 +179,7 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid token"
-            )
+            ) from None
         
         user = self.user_repo.get_by_id(user_id)
         if not user:

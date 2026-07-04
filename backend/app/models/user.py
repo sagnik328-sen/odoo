@@ -1,9 +1,9 @@
 from datetime import datetime
-from enum import Enum as PyEnum
-from uuid import uuid4, UUID
-from typing import Optional, TYPE_CHECKING
+from enum import StrEnum
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, String, Boolean, func
+from sqlalchemy import Boolean, DateTime, Enum, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.employee import EmployeeProfile
 
 
-class UserRole(str, PyEnum):
+class UserRole(StrEnum):
     ADMIN = "admin"
     HR = "hr"
     EMPLOYEE = "employee"

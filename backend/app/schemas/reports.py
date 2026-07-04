@@ -1,84 +1,86 @@
 from datetime import date, datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
 class DashboardSummary(BaseModel):
-    total_employees: int = Field(..., description="Total number of employees")
-    active_employees: int = Field(..., description="Number of active employees")
-    present_today: int = Field(..., description="Number of employees present today")
-    absent_today: int = Field(..., description="Number of employees absent today")
-    on_leave_today: int = Field(..., description="Number of employees on leave today")
-    total_payroll_current_month: float = Field(..., description="Total payroll for current month")
-    average_attendance_percentage: float = Field(..., description="Average attendance percentage")
-    pending_leave_requests: int = Field(..., description="Number of pending leave requests")
+    total_employees: int = Field(description="Total number of user accounts")
+    active_employees: int = Field(description="Number of active users")
+    present_today: int = Field(description="Employees present or half-day today")
+    absent_today: int = Field(description="Employees absent today")
+    on_leave_today: int = Field(description="Employees on approved leave today")
+    total_payroll_current_month: float = Field(description="Current-month net payroll")
+    average_attendance_percentage: float = Field(description="Present share of attendance")
+    pending_leave_requests: int = Field(description="Pending leave requests")
 
 
 class AttendanceReportFilters(BaseModel):
-    employee_id: Optional[int] = None
-    department: Optional[str] = None
-    status: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    month: Optional[int] = None
-    year: Optional[int] = None
+    employee_id: UUID | None = None
+    department: str | None = None
+    status: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    month: int | None = None
+    year: int | None = None
 
 
 class AttendanceReportItem(BaseModel):
-    employee_id: int
+    employee_id: UUID
     employee_name: str
-    department: Optional[str]
+    department: str | None
     attendance_date: date
-    check_in: Optional[datetime]
-    check_out: Optional[datetime]
-    working_hours: Optional[float]
+    check_in: datetime | None
+    check_out: datetime | None
+    working_hours: float
     status: str
 
 
 class AttendanceReportResponse(BaseModel):
-    items: List[AttendanceReportItem]
+    items: list[AttendanceReportItem]
     total: int
     filters: AttendanceReportFilters
 
 
 class LeaveReportFilters(BaseModel):
-    employee_id: Optional[int] = None
-    leave_type: Optional[str] = None
-    department: Optional[str] = None
-    status: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    employee_id: UUID | None = None
+    leave_type: str | None = None
+    department: str | None = None
+    status: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
 
 
 class LeaveReportItem(BaseModel):
-    employee_id: int
+    employee_id: UUID
     employee_name: str
-    department: Optional[str]
+    department: str | None
     leave_type: str
     start_date: date
     end_date: date
     status: str
-    days: float
+    days: int
 
 
 class LeaveReportResponse(BaseModel):
-    items: List[LeaveReportItem]
+    items: list[LeaveReportItem]
     total: int
     filters: LeaveReportFilters
 
 
 class PayrollReportFilters(BaseModel):
-    employee_id: Optional[int] = None
-    department: Optional[str] = None
-    month: Optional[int] = None
-    year: Optional[int] = None
+    employee_id: UUID | None = None
+    department: str | None = None
+    month: int | None = None
+    year: int | None = None
 
 
 class PayrollReportItem(BaseModel):
-    employee_id: int
+    employee_id: UUID
     employee_name: str
-    department: Optional[str]
-    month: int
+    department: str | None
+    month: str
     year: int
     basic_salary: float
     bonuses: float
@@ -88,52 +90,53 @@ class PayrollReportItem(BaseModel):
 
 
 class PayrollReportResponse(BaseModel):
-    items: List[PayrollReportItem]
+    items: list[PayrollReportItem]
     total: int
     filters: PayrollReportFilters
 
 
 class EmployeeReportFilters(BaseModel):
-    department: Optional[str] = None
-    designation: Optional[str] = None
-    is_active: Optional[bool] = None
+    department: str | None = None
+    designation: str | None = None
+    is_active: bool | None = None
 
 
 class EmployeeReportItem(BaseModel):
-    employee_id: int
+    employee_id: UUID
+    employee_code: str
     full_name: str
     email: str
-    department: Optional[str]
-    designation: Optional[str]
-    joining_date: Optional[date]
+    department: str | None
+    designation: str | None
+    joining_date: datetime | None
     is_active: bool
 
 
 class EmployeeReportResponse(BaseModel):
-    items: List[EmployeeReportItem]
+    items: list[EmployeeReportItem]
     total: int
     filters: EmployeeReportFilters
 
 
 class AttendanceAnalyticsData(BaseModel):
-    monthly_attendance: List[Dict[str, Any]]
-    weekly_attendance: List[Dict[str, Any]]
-    status_distribution: List[Dict[str, Any]]
+    monthly_attendance: list[dict[str, Any]]
+    weekly_attendance: list[dict[str, Any]]
+    status_distribution: list[dict[str, Any]]
 
 
 class LeaveAnalyticsData(BaseModel):
-    leave_trends: List[Dict[str, Any]]
-    leave_type_distribution: List[Dict[str, Any]]
-    monthly_leave: List[Dict[str, Any]]
+    leave_trends: list[dict[str, Any]]
+    leave_type_distribution: list[dict[str, Any]]
+    monthly_leave: list[dict[str, Any]]
 
 
 class PayrollAnalyticsData(BaseModel):
-    payroll_trends: List[Dict[str, Any]]
-    salary_distribution: List[Dict[str, Any]]
-    department_payroll: List[Dict[str, Any]]
+    payroll_trends: list[dict[str, Any]]
+    salary_distribution: list[dict[str, Any]]
+    department_payroll: list[dict[str, Any]]
 
 
 class EmployeeAnalyticsData(BaseModel):
-    department_distribution: List[Dict[str, Any]]
-    employee_growth: List[Dict[str, Any]]
-    gender_distribution: List[Dict[str, Any]]
+    department_distribution: list[dict[str, Any]]
+    employee_growth: list[dict[str, Any]]
+    gender_distribution: list[dict[str, Any]]

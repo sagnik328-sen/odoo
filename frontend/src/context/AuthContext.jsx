@@ -74,6 +74,8 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// The provider and hook intentionally share one small module.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

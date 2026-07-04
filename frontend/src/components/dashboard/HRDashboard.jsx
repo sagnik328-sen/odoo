@@ -24,7 +24,6 @@ const HRDashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [usersList, setUsersList] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [payrollStatus, setPayrollStatus] = useState('Pending');
   
   // Payroll Management States
   const [payrollHistory, setPayrollHistory] = useState([]);
@@ -47,7 +46,7 @@ const HRDashboard = () => {
   const [editingPayslip, setEditingPayslip] = useState(null);
   
   // Modals
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [_isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isPayrollModalOpen, setIsPayrollModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -56,8 +55,8 @@ const HRDashboard = () => {
   const [newFullName, setNewFullName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('employee');
-  const [registerError, setRegisterError] = useState('');
-  const [registerSuccess, setRegisterSuccess] = useState('');
+  const [_registerError, setRegisterError] = useState('');
+  const [_registerSuccess, setRegisterSuccess] = useState('');
 
   // Load Data
   const loadData = () => {
@@ -132,6 +131,8 @@ const HRDashboard = () => {
       fetchPayrollData();
       fetchNotifications();
     }
+  // User identity is the intentional refresh boundary for this dashboard.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Actions
@@ -155,7 +156,7 @@ const HRDashboard = () => {
     loadData();
   };
 
-  const handleRegisterEmployee = (e) => {
+  const _handleRegisterEmployee = (e) => {
     e.preventDefault();
     setRegisterError('');
     setRegisterSuccess('');

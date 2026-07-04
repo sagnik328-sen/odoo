@@ -1,8 +1,10 @@
 import io
 import uuid
+
 from fastapi.testclient import TestClient
-from app.main import app
+
 from app.database.session import get_db
+from app.main import app
 from app.models.user import User, UserRole
 from app.utils.security import get_password_hash
 
@@ -136,7 +138,7 @@ def test_hr_admin_crud_flow():
 
         # 4. Search and list employees
         list_res = client.get(
-            f"/api/v1/employees?search=Onboarded&department=Product",
+            "/api/v1/employees?search=Onboarded&department=Product",
             headers=headers
         )
         assert list_res.status_code == 200

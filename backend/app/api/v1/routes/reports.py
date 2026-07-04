@@ -1,25 +1,26 @@
 from datetime import date
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, HTTPException
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_db, get_current_user, require_roles
+from app.core.dependencies import get_current_user, get_db, require_roles
 from app.models.user import User
 from app.schemas.reports import (
-    DashboardSummary,
+    AttendanceAnalyticsData,
     AttendanceReportFilters,
     AttendanceReportResponse,
-    LeaveReportFilters,
-    LeaveReportResponse,
-    PayrollReportFilters,
-    PayrollReportResponse,
+    DashboardSummary,
+    EmployeeAnalyticsData,
     EmployeeReportFilters,
     EmployeeReportResponse,
-    AttendanceAnalyticsData,
     LeaveAnalyticsData,
+    LeaveReportFilters,
+    LeaveReportResponse,
     PayrollAnalyticsData,
-    EmployeeAnalyticsData,
+    PayrollReportFilters,
+    PayrollReportResponse,
 )
 from app.services.reports import ReportsService
 from app.utils.exports.csv import export_to_csv
@@ -40,13 +41,13 @@ def get_reports_dashboard(
 
 @router.get("/attendance", response_model=AttendanceReportResponse)
 def get_attendance_report(
-    employee_id: Optional[int] = Query(None),
-    department: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
-    start_date: Optional[date] = Query(None),
-    end_date: Optional[date] = Query(None),
-    month: Optional[int] = Query(None, ge=1, le=12),
-    year: Optional[int] = Query(None, ge=2020, le=2030),
+    employee_id: UUID | None = Query(None),
+    department: str | None = Query(None),
+    status: str | None = Query(None),
+    start_date: date | None = Query(None),
+    end_date: date | None = Query(None),
+    month: int | None = Query(None, ge=1, le=12),
+    year: int | None = Query(None, ge=2020, le=2030),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
@@ -76,12 +77,12 @@ def get_attendance_report(
 
 @router.get("/leave", response_model=LeaveReportResponse)
 def get_leave_report(
-    employee_id: Optional[int] = Query(None),
-    leave_type: Optional[str] = Query(None),
-    department: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
-    start_date: Optional[date] = Query(None),
-    end_date: Optional[date] = Query(None),
+    employee_id: UUID | None = Query(None),
+    leave_type: str | None = Query(None),
+    department: str | None = Query(None),
+    status: str | None = Query(None),
+    start_date: date | None = Query(None),
+    end_date: date | None = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
@@ -110,10 +111,10 @@ def get_leave_report(
 
 @router.get("/payroll", response_model=PayrollReportResponse)
 def get_payroll_report(
-    employee_id: Optional[int] = Query(None),
-    department: Optional[str] = Query(None),
-    month: Optional[int] = Query(None, ge=1, le=12),
-    year: Optional[int] = Query(None, ge=2020, le=2030),
+    employee_id: UUID | None = Query(None),
+    department: str | None = Query(None),
+    month: int | None = Query(None, ge=1, le=12),
+    year: int | None = Query(None, ge=2020, le=2030),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
@@ -140,9 +141,9 @@ def get_payroll_report(
 
 @router.get("/employees", response_model=EmployeeReportResponse)
 def get_employee_report(
-    department: Optional[str] = Query(None),
-    designation: Optional[str] = Query(None),
-    is_active: Optional[bool] = Query(None),
+    department: str | None = Query(None),
+    designation: str | None = Query(None),
+    is_active: bool | None = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
@@ -203,13 +204,13 @@ def get_employee_analytics(
 @router.get("/export/attendance/{format}")
 def export_attendance_report(
     format: str,
-    employee_id: Optional[int] = Query(None),
-    department: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
-    start_date: Optional[date] = Query(None),
-    end_date: Optional[date] = Query(None),
-    month: Optional[int] = Query(None, ge=1, le=12),
-    year: Optional[int] = Query(None, ge=2020, le=2030),
+    employee_id: UUID | None = Query(None),
+    department: str | None = Query(None),
+    status: str | None = Query(None),
+    start_date: date | None = Query(None),
+    end_date: date | None = Query(None),
+    month: int | None = Query(None, ge=1, le=12),
+    year: int | None = Query(None, ge=2020, le=2030),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["hr", "admin"])),
 ):
@@ -228,7 +229,7 @@ def export_attendance_report(
     )
     
     report = service.get_attendance_report(filters=filters, skip=0, limit=10000)
-    data = [item.dict() for item in report.items]
+    data = [item.model_dump(mode="json") for item in report.items]
     
     report_title = "Attendance Report"
     generated_by = current_user.full_name
@@ -260,8 +261,18 @@ def export_leave_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["hr", "admin"])),
 ):
-    # Placeholder for leave export
-    raise HTTPException(status_code=501, detail="Leave reports export not implemented yet")
+    if format not in ["csv", "excel", "pdf"]:
+        raise HTTPException(status_code=400, detail="Invalid format. Supported formats: csv, excel, pdf")
+    report = ReportsService(db).get_leave_report(
+        filters=LeaveReportFilters(), skip=0, limit=10000
+    )
+    return _export_response(
+        [item.model_dump(mode="json") for item in report.items],
+        format,
+        "Leave Report",
+        current_user.full_name,
+        "leave_report",
+    )
 
 
 @router.get("/export/payroll/{format}")
@@ -270,8 +281,18 @@ def export_payroll_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["hr", "admin"])),
 ):
-    # Placeholder for payroll export
-    raise HTTPException(status_code=501, detail="Payroll reports export not implemented yet")
+    if format not in ["csv", "excel", "pdf"]:
+        raise HTTPException(status_code=400, detail="Invalid format. Supported formats: csv, excel, pdf")
+    report = ReportsService(db).get_payroll_report(
+        filters=PayrollReportFilters(), skip=0, limit=10000
+    )
+    return _export_response(
+        [item.model_dump(mode="json") for item in report.items],
+        format,
+        "Payroll Report",
+        current_user.full_name,
+        "payroll_report",
+    )
 
 
 @router.get("/export/employees/{format}")
@@ -285,7 +306,7 @@ def export_employee_report(
     
     service = ReportsService(db)
     report = service.get_employee_report(filters=EmployeeReportFilters(), skip=0, limit=10000)
-    data = [item.dict() for item in report.items]
+    data = [item.model_dump(mode="json") for item in report.items]
     
     report_title = "Employee Report"
     generated_by = current_user.full_name
@@ -307,4 +328,24 @@ def export_employee_report(
         output,
         media_type=media_type,
         headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+def _export_response(data, output_format, title, generated_by, filename):
+    if output_format == "csv":
+        output = export_to_csv(data, title, generated_by)
+        media_type = "text/csv"
+        extension = "csv"
+    elif output_format == "excel":
+        output = export_to_excel(data, title, generated_by)
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        extension = "xlsx"
+    else:
+        output = export_to_pdf(data, title, generated_by)
+        media_type = "application/pdf"
+        extension = "pdf"
+    return StreamingResponse(
+        output,
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}.{extension}"},
     )

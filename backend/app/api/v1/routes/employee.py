@@ -1,20 +1,22 @@
 import os
 import shutil
-from datetime import datetime
+import time
 from uuid import UUID
-from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.core.dependencies import RoleChecker, get_current_user
 from app.database.session import get_db
-from app.core.dependencies import get_current_user, RoleChecker
+from app.models.employee import EmployeeDocument, EmployeeProfile
 from app.models.user import User, UserRole
-from app.models.employee import EmployeeProfile, EmployeeDocument
-from app.repositories.user import UserRepository
 from app.repositories.employee import EmployeeRepository
+from app.repositories.user import UserRepository
 from app.schemas.employee import (
-    EmployeeDetailResponse, EmployeeCreate, EmployeeUpdate, PaginatedEmployeeResponse
+    EmployeeCreate,
+    EmployeeDetailResponse,
+    EmployeeUpdate,
+    PaginatedEmployeeResponse,
 )
 from app.utils.security import get_password_hash
 
@@ -40,10 +42,10 @@ def get_employee_response(user: User, db: Session) -> User:
 
 @router.get("/employees", response_model=PaginatedEmployeeResponse)
 def list_employees(
-    search: Optional[str] = None,
-    department: Optional[str] = None,
-    designation: Optional[str] = None,
-    role: Optional[str] = None,
+    search: str | None = None,
+    department: str | None = None,
+    designation: str | None = None,
+    role: str | None = None,
     page: int = 1,
     size: int = 10,
     current_user: User = Depends(RoleChecker([UserRole.HR, UserRole.ADMIN])),
@@ -301,7 +303,7 @@ def upload_avatar(
     os.makedirs("uploads", exist_ok=True)
 
     file_ext = os.path.splitext(file.filename)[1]
-    filename = f"avatar_{user_id}_{int(datetime.utcnow().timestamp())}{file_ext}"
+    filename = f"avatar_{user_id}_{int(time.time())}{file_ext}"
     file_path = os.path.join("uploads", filename)
 
     with open(file_path, "wb") as buffer:
@@ -345,7 +347,7 @@ def upload_document(
     os.makedirs("uploads", exist_ok=True)
 
     file_ext = os.path.splitext(file.filename)[1]
-    filename = f"doc_{user_id}_{int(datetime.utcnow().timestamp())}{file_ext}"
+    filename = f"doc_{user_id}_{int(time.time())}{file_ext}"
     file_path = os.path.join("uploads", filename)
 
     with open(file_path, "wb") as buffer:

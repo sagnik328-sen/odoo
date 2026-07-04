@@ -1,13 +1,13 @@
-from typing import Optional
 from uuid import UUID
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
-from app.core.config import settings
+
 from app.database.session import get_db
 from app.models.user import User, UserRole
 from app.repositories.user import UserRepository
-from app.utils.security import decode_token
+from app.utils.security import decode_token, is_token_revoked
 
 security = HTTPBearer()
 
@@ -23,6 +23,8 @@ def get_current_user(
     )
     
     token = credentials.credentials
+    if is_token_revoked(token):
+        raise credentials_exception from None
     payload = decode_token(token)
     
     if payload is None:
@@ -31,14 +33,14 @@ def get_current_user(
     if payload.get("type") != "access":
         raise credentials_exception
     
-    user_id: Optional[str] = payload.get("sub")
+    user_id: str | None = payload.get("sub")
     if user_id is None:
         raise credentials_exception
     
     try:
         user_uuid = UUID(user_id)
     except ValueError:
-        raise credentials_exception
+        raise credentials_exception from None
     
     user_repo = UserRepository(db)
     user = user_repo.get_by_id(user_uuid)
@@ -73,6 +75,7 @@ class RoleChecker:
         return current_user
 
 
+<<<<<<< HEAD
 class PermissionChecker:
     def __init__(self, permission_name: str):
         self.permission_name = permission_name
@@ -102,3 +105,12 @@ def require_roles(allowed_roles: list[str]):
     return RoleChecker(role_enums)
 
 
+=======
+def require_roles(roles: list[str]) -> RoleChecker:
+    """Create a FastAPI dependency that allows only the supplied role values."""
+    try:
+        allowed_roles = [UserRole(role.lower()) for role in roles]
+    except ValueError as exc:
+        raise RuntimeError(f"Unknown role configured: {roles}") from exc
+    return RoleChecker(allowed_roles)
+>>>>>>> b5b4a85 (Testing, Optimization & Documentation)

@@ -1,23 +1,23 @@
 from uuid import UUID
-from typing import Optional, List, Tuple
-from sqlalchemy import select, func
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
+
 from app.models.payroll import Payslip
-from app.models.user import User
 
 
 class PayrollRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_id(self, payslip_id: UUID) -> Optional[Payslip]:
+    def get_by_id(self, payslip_id: UUID) -> Payslip | None:
         return self.db.execute(
             select(Payslip)
             .options(joinedload(Payslip.user))
             .where(Payslip.id == payslip_id)
         ).scalar_one_or_none()
 
-    def get_by_user_month_year(self, user_id: UUID, month: str, year: int) -> Optional[Payslip]:
+    def get_by_user_month_year(self, user_id: UUID, month: str, year: int) -> Payslip | None:
         return self.db.execute(
             select(Payslip)
             .where(
@@ -29,12 +29,12 @@ class PayrollRepository:
 
     def list_payslips(
         self,
-        user_id: Optional[UUID] = None,
-        month: Optional[str] = None,
-        year: Optional[int] = None,
+        user_id: UUID | None = None,
+        month: str | None = None,
+        year: int | None = None,
         page: int = 1,
         size: int = 10
-    ) -> Tuple[List[Payslip], int]:
+    ) -> tuple[list[Payslip], int]:
         query = select(Payslip).options(joinedload(Payslip.user))
 
         if user_id:

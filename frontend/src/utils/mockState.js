@@ -91,7 +91,7 @@ export const mockState = {
   // Attendance
   getAttendance: () => getStoredItem('pf_attendance', DEFAULT_ATTENDANCE),
   saveAttendance: (data) => setStoredItem('pf_attendance', data),
-  clockIn: (employeeId) => {
+  clockIn: (_employeeId) => {
     const status = getStoredItem('pf_clock_status', { isClockedIn: false, clockInTime: null });
     status.isClockedIn = true;
     status.clockInTime = new Date().toISOString();

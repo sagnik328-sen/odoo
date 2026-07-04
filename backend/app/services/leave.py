@@ -130,12 +130,13 @@ class NotificationService:
         return NotificationResponse.model_validate(notification)
 
     def mark_all_read(self, user: User) -> list[NotificationResponse]:
-        from app.models.leave import Notification
         from sqlalchemy import select
+
+        from app.models.leave import Notification
         
         unread_notifications = self.db.scalars(
             select(Notification).where(
-                Notification.user_id == user.id, Notification.is_read == False
+                Notification.user_id == user.id, not Notification.is_read
             )
         ).all()
         

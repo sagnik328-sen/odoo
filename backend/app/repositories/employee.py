@@ -1,16 +1,17 @@
 from uuid import UUID
-from typing import Optional, Tuple, List
+
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select, or_, func
+
+from app.models.employee import EmployeeDocument, EmployeeProfile
 from app.models.user import User
-from app.models.employee import EmployeeProfile, EmployeeDocument
 
 
 class EmployeeRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_profile_by_user_id(self, user_id: UUID) -> Optional[EmployeeProfile]:
+    def get_profile_by_user_id(self, user_id: UUID) -> EmployeeProfile | None:
         result = self.db.execute(
             select(EmployeeProfile)
             .options(joinedload(EmployeeProfile.documents))
@@ -29,7 +30,7 @@ class EmployeeRepository:
         self.db.refresh(profile)
         return profile
 
-    def get_document(self, doc_id: UUID) -> Optional[EmployeeDocument]:
+    def get_document(self, doc_id: UUID) -> EmployeeDocument | None:
         result = self.db.execute(select(EmployeeDocument).where(EmployeeDocument.id == doc_id))
         return result.scalar_one_or_none()
 
@@ -45,13 +46,13 @@ class EmployeeRepository:
 
     def list_employees(
         self,
-        search: Optional[str] = None,
-        department: Optional[str] = None,
-        designation: Optional[str] = None,
-        role: Optional[str] = None,
+        search: str | None = None,
+        department: str | None = None,
+        designation: str | None = None,
+        role: str | None = None,
         page: int = 1,
         size: int = 10
-    ) -> Tuple[List[User], int]:
+    ) -> tuple[list[User], int]:
         query = select(User).outerjoin(EmployeeProfile, User.id == EmployeeProfile.user_id).options(joinedload(User.profile))
         count_query = select(func.count(User.id)).outerjoin(EmployeeProfile, User.id == EmployeeProfile.user_id)
 

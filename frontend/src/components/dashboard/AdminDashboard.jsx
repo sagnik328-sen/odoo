@@ -18,7 +18,7 @@ const AdminDashboard = () => {
   // States
   const [usersList, setUsersList] = useState([]);
   const [systemLogs, setSystemLogs] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [_notifications, setNotifications] = useState([]);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [backupTime, setBackupTime] = useState('12 hours ago');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -56,10 +56,12 @@ const AdminDashboard = () => {
     if (user) {
       fetchNotifications();
     }
+  // User identity is the intentional refresh boundary for this dashboard.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Actions
-  const handleRoleChange = (userId, newRole) => {
+  const _handleRoleChange = (userId, newRole) => {
     mockState.updateUserRole(userId, newRole);
     loadData();
   };
@@ -161,7 +163,7 @@ const AdminDashboard = () => {
     loadData();
   };
 
-  const handleMarkAllRead = async () => {
+  const _handleMarkAllRead = async () => {
     try {
       await notificationApi.markAllRead();
       await fetchNotifications();

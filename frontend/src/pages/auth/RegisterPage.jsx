@@ -142,7 +142,7 @@ const RegisterPage = () => {
                       const hasUpperCase = /[A-Z]/.test(value);
                       const hasLowerCase = /[a-z]/.test(value);
                       const hasNumber = /[0-9]/.test(value);
-                      const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+                      const hasSpecialChar = /[!@#$%^&*()_+=[\]{};':"\\|,.<>/?-]/.test(value);
                       
                       if (!hasUpperCase) return 'Password must contain at least one uppercase letter';
                       if (!hasLowerCase) return 'Password must contain at least one lowercase letter';

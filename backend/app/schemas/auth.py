@@ -1,6 +1,8 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, field_validator
+
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+
 from app.models.user import UserRole
 
 
@@ -31,16 +33,14 @@ class UserCreate(UserBase):
 
 
 class UserResponse(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     role: UserRole
     is_active: bool
     is_email_verified: bool
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
 
 class LoginRequest(BaseModel):
     email: EmailStr

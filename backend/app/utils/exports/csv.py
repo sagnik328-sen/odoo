@@ -1,14 +1,14 @@
 import csv
-from io import StringIO
 from datetime import datetime
-from typing import List, Dict, Any
+from io import StringIO
+from typing import Any
 
 
 def export_to_csv(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     report_title: str,
     generated_by: str,
-    filters: Dict[str, Any] = None,
+    filters: dict[str, Any] = None,
 ) -> StringIO:
     output = StringIO()
     writer = csv.writer(output)

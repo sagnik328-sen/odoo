@@ -1,66 +1,61 @@
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+
+from pydantic import BaseModel, ConfigDict, EmailStr
+
 from app.models.user import UserRole
 
 
 class EmployeeDocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     name: str
     file_path: str
     uploaded_at: datetime
 
-    class Config:
-        from_attributes = True
-
-
 class EmployeeProfileResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    department: Optional[str] = None
-    designation: Optional[str] = None
-    manager_id: Optional[UUID] = None
-    manager_name: Optional[str] = None
-    joining_date: Optional[datetime] = None
+    phone: str | None = None
+    address: str | None = None
+    department: str | None = None
+    designation: str | None = None
+    manager_id: UUID | None = None
+    manager_name: str | None = None
+    joining_date: datetime | None = None
     base_salary: float = 0.0
     allowances: float = 0.0
     bonuses: float = 0.0
     deductions: float = 0.0
     tax: float = 0.0
-    profile_picture: Optional[str] = None
-    documents: List[EmployeeDocumentResponse] = []
-
-    class Config:
-        from_attributes = True
-
+    profile_picture: str | None = None
+    documents: list[EmployeeDocumentResponse] = []
 
 class EmployeeDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     employee_id: str
     full_name: str
     email: str
     role: UserRole
     is_active: bool
-    profile: Optional[EmployeeProfileResponse] = None
-
-    class Config:
-        from_attributes = True
-
+    profile: EmployeeProfileResponse | None = None
 
 class EmployeeCreate(BaseModel):
     employee_id: str
     full_name: str
     email: EmailStr
     role: UserRole = UserRole.EMPLOYEE
-    password: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    department: Optional[str] = None
-    designation: Optional[str] = None
-    manager_id: Optional[UUID] = None
-    joining_date: Optional[datetime] = None
+    password: str | None = None
+    phone: str | None = None
+    address: str | None = None
+    department: str | None = None
+    designation: str | None = None
+    manager_id: UUID | None = None
+    joining_date: datetime | None = None
     base_salary: float = 0.0
     allowances: float = 0.0
     bonuses: float = 0.0
@@ -70,26 +65,26 @@ class EmployeeCreate(BaseModel):
 
 class EmployeeUpdate(BaseModel):
     # Personal details (editable by employee)
-    phone: Optional[str] = None
-    address: Optional[str] = None
+    phone: str | None = None
+    address: str | None = None
 
     # Job & Org details (editable by HR/Admin)
-    full_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    role: Optional[UserRole] = None
-    department: Optional[str] = None
-    designation: Optional[str] = None
-    manager_id: Optional[UUID] = None
-    joining_date: Optional[datetime] = None
-    base_salary: Optional[float] = None
-    allowances: Optional[float] = None
-    bonuses: Optional[float] = None
-    deductions: Optional[float] = None
-    tax: Optional[float] = None
+    full_name: str | None = None
+    email: EmailStr | None = None
+    role: UserRole | None = None
+    department: str | None = None
+    designation: str | None = None
+    manager_id: UUID | None = None
+    joining_date: datetime | None = None
+    base_salary: float | None = None
+    allowances: float | None = None
+    bonuses: float | None = None
+    deductions: float | None = None
+    tax: float | None = None
 
 
 class PaginatedEmployeeResponse(BaseModel):
-    items: List[EmployeeDetailResponse]
+    items: list[EmployeeDetailResponse]
     total: int
     page: int
     size: int

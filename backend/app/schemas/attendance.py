@@ -1,17 +1,17 @@
-from datetime import datetime, date
+from datetime import date, datetime
 from uuid import UUID
-from typing import Optional
-from pydantic import BaseModel, field_validator
 
-from app.models.attendance import AttendanceStatus, ApprovalStatus
+from pydantic import BaseModel, ConfigDict
+
+from app.models.attendance import ApprovalStatus, AttendanceStatus
 
 
 # Base Schemas
 class AttendanceBase(BaseModel):
     attendance_date: date
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
-    remarks: Optional[str] = None
+    check_in: datetime | None = None
+    check_out: datetime | None = None
+    remarks: str | None = None
 
 
 class AttendanceCreate(AttendanceBase):
@@ -19,16 +19,16 @@ class AttendanceCreate(AttendanceBase):
 
 
 class AttendanceUpdate(BaseModel):
-    check_in: Optional[datetime] = None
-    check_out: Optional[datetime] = None
-    attendance_status: Optional[AttendanceStatus] = None
-    remarks: Optional[str] = None
+    check_in: datetime | None = None
+    check_out: datetime | None = None
+    attendance_status: AttendanceStatus | None = None
+    remarks: str | None = None
 
 
 class AttendanceCorrectionBase(BaseModel):
     attendance_id: UUID
-    new_check_in: Optional[datetime] = None
-    new_check_out: Optional[datetime] = None
+    new_check_in: datetime | None = None
+    new_check_out: datetime | None = None
     reason: str
 
 
@@ -38,11 +38,13 @@ class AttendanceCorrectionCreate(AttendanceCorrectionBase):
 
 class AttendanceCorrectionUpdate(BaseModel):
     approval_status: ApprovalStatus
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 # Response Schemas
 class AttendanceResponse(AttendanceBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     user_id: UUID
     working_hours: float
@@ -51,22 +53,18 @@ class AttendanceResponse(AttendanceBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
-
 class AttendanceCorrectionResponse(AttendanceCorrectionBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     user_id: UUID
     requested_by: UUID
-    old_check_in: Optional[datetime] = None
-    old_check_out: Optional[datetime] = None
+    old_check_in: datetime | None = None
+    old_check_out: datetime | None = None
     approval_status: ApprovalStatus
-    approved_by: Optional[UUID] = None
+    approved_by: UUID | None = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
 
 # Request Schemas for Specific Actions

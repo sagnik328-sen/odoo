@@ -1,7 +1,8 @@
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, List
-from pydantic import BaseModel
+
+from pydantic import BaseModel, ConfigDict
+
 from app.models.payroll import PayslipStatus
 
 
@@ -20,15 +21,17 @@ class PayslipCreate(PayslipBase):
 
 
 class PayslipUpdate(BaseModel):
-    basic_salary: Optional[float] = None
-    allowances: Optional[float] = None
-    bonuses: Optional[float] = None
-    deductions: Optional[float] = None
-    tax: Optional[float] = None
-    status: Optional[PayslipStatus] = None
+    basic_salary: float | None = None
+    allowances: float | None = None
+    bonuses: float | None = None
+    deductions: float | None = None
+    tax: float | None = None
+    status: PayslipStatus | None = None
 
 
 class PayslipResponse(PayslipBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     user_id: UUID
     employee_id: str
@@ -37,12 +40,8 @@ class PayslipResponse(PayslipBase):
     status: PayslipStatus
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
-
 class PaginatedPayslipResponse(BaseModel):
-    items: List[PayslipResponse]
+    items: list[PayslipResponse]
     total: int
     page: int
     size: int

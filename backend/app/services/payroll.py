@@ -1,21 +1,19 @@
 import io
-from datetime import datetime
 from uuid import UUID
-from typing import Optional, List, Tuple
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
-from app.models.payroll import Payslip, PayslipStatus
-from app.models.user import User, UserRole
-from app.repositories.payroll import PayrollRepository
-from app.repositories.employee import EmployeeRepository
-from app.repositories.user import UserRepository
+from fastapi import HTTPException, status
+from reportlab.lib import colors
 
 # ReportLab PDF imports
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from sqlalchemy.orm import Session
+
+from app.models.payroll import Payslip, PayslipStatus
+from app.repositories.employee import EmployeeRepository
+from app.repositories.payroll import PayrollRepository
+from app.repositories.user import UserRepository
 
 
 class PayrollService:
@@ -86,28 +84,28 @@ class PayrollService:
 
         return created
 
-    def get_payslip(self, payslip_id: UUID) -> Optional[Payslip]:
+    def get_payslip(self, payslip_id: UUID) -> Payslip | None:
         return self.payroll_repo.get_by_id(payslip_id)
 
     def list_payslips(
         self,
-        user_id: Optional[UUID] = None,
-        month: Optional[str] = None,
-        year: Optional[int] = None,
+        user_id: UUID | None = None,
+        month: str | None = None,
+        year: int | None = None,
         page: int = 1,
         size: int = 10
-    ) -> Tuple[List[Payslip], int]:
+    ) -> tuple[list[Payslip], int]:
         return self.payroll_repo.list_payslips(user_id, month, year, page, size)
 
     def update_payslip(
         self,
         payslip_id: UUID,
-        basic_salary: Optional[float] = None,
-        allowances: Optional[float] = None,
-        bonuses: Optional[float] = None,
-        deductions: Optional[float] = None,
-        tax: Optional[float] = None,
-        status_val: Optional[PayslipStatus] = None
+        basic_salary: float | None = None,
+        allowances: float | None = None,
+        bonuses: float | None = None,
+        deductions: float | None = None,
+        tax: float | None = None,
+        status_val: PayslipStatus | None = None
     ) -> Payslip:
         payslip = self.payroll_repo.get_by_id(payslip_id)
         if not payslip:

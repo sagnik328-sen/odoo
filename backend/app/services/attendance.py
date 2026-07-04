@@ -1,15 +1,16 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from uuid import UUID
-from typing import Optional, List
 
 from fastapi import HTTPException, status
 
-from app.models.attendance import Attendance, AttendanceCorrection, AttendanceStatus, ApprovalStatus
+from app.models.attendance import ApprovalStatus, Attendance, AttendanceCorrection, AttendanceStatus
 from app.models.user import User
 from app.repositories.attendance import AttendanceRepository
 from app.schemas.attendance import (
-    AttendanceResponse, AttendanceUpdate, AttendanceCorrectionCreate,
-    AttendanceCorrectionResponse
+    AttendanceCorrectionCreate,
+    AttendanceCorrectionResponse,
+    AttendanceResponse,
+    AttendanceUpdate,
 )
 
 
@@ -114,33 +115,33 @@ class AttendanceService:
         
         return AttendanceResponse.model_validate(attendance)
 
-    def get_today_attendance(self, user: User) -> Optional[AttendanceResponse]:
+    def get_today_attendance(self, user: User) -> AttendanceResponse | None:
         attendance = self.repo.get_user_attendance_today(user.id)
         if not attendance:
             return None
         return AttendanceResponse.model_validate(attendance)
 
-    def get_week_attendance(self, user: User) -> List[AttendanceResponse]:
+    def get_week_attendance(self, user: User) -> list[AttendanceResponse]:
         attendances = self.repo.get_user_attendance_week(user.id)
         return [AttendanceResponse.model_validate(a) for a in attendances]
 
-    def get_month_attendance(self, user: User, year: int, month: int) -> List[AttendanceResponse]:
+    def get_month_attendance(self, user: User, year: int, month: int) -> list[AttendanceResponse]:
         attendances = self.repo.get_user_attendance_month(user.id, year, month)
         return [AttendanceResponse.model_validate(a) for a in attendances]
 
     def get_attendance_history(
-        self, user: User, start_date: Optional[date] = None, end_date: Optional[date] = None
-    ) -> List[AttendanceResponse]:
+        self, user: User, start_date: date | None = None, end_date: date | None = None
+    ) -> list[AttendanceResponse]:
         attendances = self.repo.get_user_attendance_history(user.id, start_date, end_date)
         return [AttendanceResponse.model_validate(a) for a in attendances]
 
     def get_all_attendance(
         self,
         current_user: User,
-        start_date: Optional[date] = None,
-        end_date: Optional[date] = None,
-        status: Optional[AttendanceStatus] = None
-    ) -> List[AttendanceResponse]:
+        start_date: date | None = None,
+        end_date: date | None = None,
+        status: AttendanceStatus | None = None
+    ) -> list[AttendanceResponse]:
         attendances = self.repo.get_all_attendance(start_date, end_date, status)
         return [AttendanceResponse.model_validate(a) for a in attendances]
 

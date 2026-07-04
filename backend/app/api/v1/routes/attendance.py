@@ -1,16 +1,17 @@
 from datetime import date
 from uuid import UUID
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, RoleChecker
-from app.models.user import User, UserRole
+from app.core.dependencies import RoleChecker, get_current_user
 from app.database.session import get_db
+from app.models.user import User, UserRole
 from app.schemas.attendance import (
-    AttendanceResponse, AttendanceUpdate,
-    AttendanceCorrectionCreate, AttendanceCorrectionResponse
+    AttendanceCorrectionCreate,
+    AttendanceCorrectionResponse,
+    AttendanceResponse,
+    AttendanceUpdate,
 )
 from app.services.attendance import AttendanceService
 
@@ -36,7 +37,7 @@ def check_out(
     return service.check_out(current_user)
 
 
-@router.get("/me/today", response_model=Optional[AttendanceResponse])
+@router.get("/me/today", response_model=AttendanceResponse | None)
 def get_today_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -67,8 +68,8 @@ def get_month_attendance(
 
 @router.get("/me/history", response_model=list[AttendanceResponse])
 def get_attendance_history(
-    start_date: Optional[date] = Query(None, description="Start date for history (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="End date for history (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Start date for history (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="End date for history (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -83,9 +84,9 @@ def get_attendance_history(
     dependencies=[Depends(RoleChecker([UserRole.ADMIN, UserRole.HR]))]
 )
 def get_all_attendance(
-    start_date: Optional[date] = Query(None),
-    end_date: Optional[date] = Query(None),
-    status: Optional[str] = Query(None),
+    start_date: date | None = Query(None),
+    end_date: date | None = Query(None),
+    status: str | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -149,11 +150,13 @@ def approve_correction(
 def send_attendance_reminders(
     db: Session = Depends(get_db)
 ):
-    from app.models.user import UserRole, User
+    from datetime import date
+
+    from sqlalchemy import select
+
     from app.models.attendance import Attendance
     from app.models.leave import Notification, NotificationType
-    from sqlalchemy import select
-    from datetime import date
+    from app.models.user import User, UserRole
 
     # Get all employees
     employees = db.scalars(select(User).where(User.role == UserRole.EMPLOYEE)).all()

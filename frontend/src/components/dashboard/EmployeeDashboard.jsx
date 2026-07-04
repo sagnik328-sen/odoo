@@ -5,6 +5,7 @@ import { employeeApi } from '../../api/employee';
 import { attendanceApi } from '../../api/attendance';
 import { payrollApi } from '../../api/payroll';
 import { notificationApi } from '../../api/notification';
+import { formatNetSalary } from '../../utils/payroll';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Clock, Calendar, DollarSign, Bell, LogOut, User, 
@@ -65,7 +66,7 @@ const EmployeeDashboard = () => {
   
   // Profile specific states
   const [profileData, setProfileData] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [_loadingProfile, setLoadingProfile] = useState(true);
   const [activeProfileTab, setActiveProfileTab] = useState('personal');
   const [editMode, setEditMode] = useState(false);
   const [phone, setPhone] = useState('');
@@ -87,7 +88,6 @@ const EmployeeDashboard = () => {
   const loadData = () => {
     if (!user) return;
     setAttendance(mockState.getAttendance());
-    setClockStatus(mockState.getClockStatus());
     setLeaves(mockState.getLeaves().filter(l => l.employeeId === user.employee_id));
     setLeaveBalances(mockState.getLeaveBalances());
     setPayroll(mockState.getPayroll());
@@ -154,6 +154,8 @@ const EmployeeDashboard = () => {
       fetchPayroll();
       fetchNotifications();
     }
+  // User identity is the intentional refresh boundary for this dashboard.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Profile Action Helpers
@@ -341,7 +343,7 @@ const EmployeeDashboard = () => {
   ];
 
   // Activities helper (merging mock events chronologically)
-  const recentActivities = [
+  const _recentActivities = [
     ...attendance.slice(-3).map(a => ({
       type: 'attendance',
       title: 'Clock Record',
@@ -712,7 +714,7 @@ const EmployeeDashboard = () => {
               <div key={slip.id} className="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl hover:border-indigo-100 hover:bg-indigo-50/5 transition">
                 <div>
                   <h4 className="font-bold text-gray-800">{slip.month} {slip.year}</h4>
-                  <p className="text-xs text-gray-400 mt-0.5">Net Pay: <strong className="text-indigo-600">${slip.net_salary.toFixed(2)}</strong></p>
+                  <p className="text-xs text-gray-400 mt-0.5">Net Pay: <strong className="text-indigo-600">${formatNetSalary(slip)}</strong></p>
                 </div>
                 <button
                   onClick={() => handleDownloadPayslip(slip)}

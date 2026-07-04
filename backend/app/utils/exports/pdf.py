@@ -1,18 +1,18 @@
-from io import BytesIO
 from datetime import datetime
-from typing import List, Dict, Any
+from io import BytesIO
+from typing import Any
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
-from reportlab.lib.units import inch
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 def export_to_pdf(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     report_title: str,
     generated_by: str,
-    filters: Dict[str, Any] = None,
+    filters: dict[str, Any] = None,
 ) -> BytesIO:
     output = BytesIO()
     doc = SimpleDocTemplate(output, pagesize=letter)

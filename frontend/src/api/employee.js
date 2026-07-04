@@ -50,7 +50,7 @@ export const employeeApi = {
   },
 
   deleteDocument: async (userId, documentId) => {
-    const response = await apiClient.delete(`/employees/${userId}/documents/${document_id || documentId}`);
+    const response = await apiClient.delete(`/employees/${userId}/documents/${documentId}`);
     return response.data;
   },
 };

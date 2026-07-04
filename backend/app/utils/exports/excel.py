@@ -1,15 +1,16 @@
-from io import BytesIO
 from datetime import datetime
-from typing import List, Dict, Any
+from io import BytesIO
+from typing import Any
+
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 
 
 def export_to_excel(
-    data: List[Dict[str, Any]],
+    data: list[dict[str, Any]],
     report_title: str,
     generated_by: str,
-    filters: Dict[str, Any] = None,
+    filters: dict[str, Any] = None,
 ) -> BytesIO:
     output = BytesIO()
     wb = Workbook()
@@ -66,7 +67,7 @@ def export_to_excel(
             try:
                 if len(str(cell.value)) > max_length:
                     max_length = len(str(cell.value))
-            except:
+            except (TypeError, ValueError):
                 pass
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[column_letter].width = adjusted_width

@@ -1,15 +1,20 @@
 # ruff: noqa: B008
 
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, status, Response, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import RoleChecker, get_current_user
 from app.database.session import get_db
-from app.models.user import User, UserRole
 from app.models.payroll import Payslip
+from app.models.user import User, UserRole
 from app.schemas.payroll import (
-    PayslipCreate, PayslipUpdate, PayslipResponse, PaginatedPayslipResponse, PayrollStats
+    PaginatedPayslipResponse,
+    PayrollStats,
+    PayslipCreate,
+    PayslipResponse,
+    PayslipUpdate,
 )
 from app.services.payroll import PayrollService
 

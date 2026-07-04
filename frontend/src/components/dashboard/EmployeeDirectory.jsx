@@ -103,6 +103,8 @@ const EmployeeDirectory = ({ currentUser }) => {
 
   useEffect(() => {
     fetchDirectory();
+  // These explicit filters are the request boundary; the helper is local to this component.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, deptFilter, desgFilter, roleFilter]);
 
   useEffect(() => {

@@ -1,12 +1,19 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
+
 from app.core.dependencies import get_current_user
 from app.database.session import get_db
 from app.models.user import User
 from app.schemas.auth import (
-    UserCreate, UserResponse, LoginRequest, TokenResponse,
-    RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, MessageResponse
+    ForgotPasswordRequest,
+    LoginRequest,
+    MessageResponse,
+    RefreshTokenRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+    UserCreate,
+    UserResponse,
 )
 from app.schemas.settings import ChangePasswordRequest
 from app.services.auth import AuthService
