@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 4 is complete. This repository contains the project foundation, authentication system, role-specific dashboards, and a complete employee profile and directory management system with local avatar and document uploads.
+> **Current status:** Milestone 5 is complete. This repository contains the project foundation, authentication system, role-specific dashboards, employee profile and directory management, and a complete attendance management module.
 
 ## Technology stack
 
@@ -367,6 +367,36 @@ Frontend:
 - Updated `EmployeeDashboard.jsx` to fetch real profile information and enable profile picture and document uploads. Added tabs for Personal Details (editable), Job Details, Salary, and Documents.
 - Created and integrated a reusable, robust `EmployeeDirectory.jsx` component inside `HRDashboard.jsx` and `AdminDashboard.jsx`. It supports real-time search, filters, pagination, profile view modals, full details editing, document uploading/management, and account deletion.
 
-## License
+## Milestone 5 scope
 
-No license has been selected yet.
+Implemented:
+
+Backend:
+- Created `Attendance` SQLAlchemy model with UUID primary key, employee ID, attendance date, check-in/out times, working hours, overtime hours, status, remarks, and timestamps.
+- Created `AttendanceCorrection` SQLAlchemy model for managing attendance correction requests with approval workflow.
+- Added Pydantic schemas for attendance requests/responses and correction workflows.
+- Implemented `AttendanceRepository` to handle database operations:
+  - Get attendance by date
+  - Get weekly/monthly attendance
+  - Get attendance history
+  - Manage attendance corrections
+- Created `AttendanceService` implementing business logic:
+  - Check-in (once per day, auto-marked Present)
+  - Check-out (after check-in, auto-calculates working hours)
+  - Auto-status calculation (Present, Absent, Half-Day based on working hours)
+  - Attendance correction request and approval
+- Added new API routes under `/api/v1/attendance/*`:
+  - Employee endpoints: `/check-in`, `/check-out`, `/me/today`, `/me/week`, `/me/month`, `/me/history`
+  - Admin endpoints: `/`, `/{employee_id}`, `/{attendance_id}`, `/correction`, `/correction/{id}/approve`
+- Generated and applied Alembic migration to create attendance tables.
+
+Frontend:
+- Implemented `attendance.js` API client for communication with backend attendance endpoints.
+- Created reusable `StatusBadge.jsx` component to display attendance status with appropriate colors.
+- Created `EmployeeAttendanceDashboard.jsx` component with:
+  - Today's attendance card
+  - Check-in/check-out buttons
+  - Weekly attendance overview
+  - Monthly calendar view (placeholder)
+- Updated `EmployeeDashboard.jsx` to use real attendance API instead of mock data.
+

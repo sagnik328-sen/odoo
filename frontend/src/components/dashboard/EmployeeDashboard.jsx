@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockState } from '../../utils/mockState';
 import { employeeApi } from '../../api/employee';
+import { attendanceApi } from '../../api/attendance';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Clock, Calendar, DollarSign, Bell, LogOut, User, 
   Plus, CheckCircle, AlertCircle, CalendarRange, Download, 
@@ -15,15 +17,43 @@ import {
 
 const EmployeeDashboard = () => {
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   
   // States
   const [attendance, setAttendance] = useState([]);
-  const [clockStatus, setClockStatus] = useState({ isClockedIn: false, clockInTime: null });
   const [leaves, setLeaves] = useState([]);
   const [leaveBalances, setLeaveBalances] = useState({ vacation: {}, sick: {}, casual: {} });
   const [payroll, setPayroll] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
+  
+  // Attendance query
+  const { data: todayAttendance } = useQuery({
+    queryKey: ['todayAttendance'],
+    queryFn: () => attendanceApi.getTodayAttendance(),
+  });
+  
+  // Check in mutation
+  const checkInMutation = useMutation({
+    mutationFn: attendanceApi.checkIn,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['todayAttendance']);
+    },
+  });
+  
+  // Check out mutation
+  const checkOutMutation = useMutation({
+    mutationFn: attendanceApi.checkOut,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['todayAttendance']);
+    },
+  });
+  
+  // Clock status based on real API data
+  const clockStatus = {
+    isClockedIn: !!todayAttendance?.check_in && !todayAttendance?.check_out,
+    clockInTime: todayAttendance?.check_in,
+  };
   
   // Modals
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
@@ -193,35 +223,10 @@ const EmployeeDashboard = () => {
   // Actions
   const handleClockToggle = () => {
     if (clockStatus.isClockedIn) {
-      // Clock Out: calculate simulated hours
-      const diffMs = new Date() - new Date(clockStatus.clockInTime);
-      const hours = Math.max(0.1, diffMs / 3600000); // minimum 0.1 hours for test
-      mockState.clockOut(user.employee_id, hours);
-      mockState.addNotification({
-        userId: user.employee_id,
-        title: 'Clocked Out Successfully',
-        message: `You clocked out. Worked ${hours.toFixed(2)} hours today.`
-      });
-      mockState.addSystemLog({
-        action: 'Clock Out',
-        user: user.email,
-        details: `Employee clocked out. Hours worked: ${hours.toFixed(2)}`
-      });
+      checkOutMutation.mutate();
     } else {
-      // Clock In
-      mockState.clockIn(user.employee_id);
-      mockState.addNotification({
-        userId: user.employee_id,
-        title: 'Clocked In Successfully',
-        message: `You clocked in at ${new Date().toLocaleTimeString()}.`
-      });
-      mockState.addSystemLog({
-        action: 'Clock In',
-        user: user.email,
-        details: `Employee clocked in.`
-      });
+      checkInMutation.mutate();
     }
-    loadData();
   };
 
   const handleRequestLeave = (e) => {
