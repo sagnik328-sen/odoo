@@ -14,6 +14,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    role: UserRole = UserRole.EMPLOYEE
 
     @field_validator('password')
     @classmethod
@@ -30,6 +31,7 @@ class UserCreate(UserBase):
         if not any(c in special_chars for c in v):
             raise ValueError('Password must contain at least one special character')
         return v
+
 
 
 class UserResponse(UserBase):
@@ -85,3 +87,8 @@ class ResetPasswordRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+

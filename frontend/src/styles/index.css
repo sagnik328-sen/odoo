@@ -124,6 +124,35 @@ button { font: inherit; }
   .dashboard-card { padding: 14px; }.floating-note { right: -5px; bottom: -50px; }.section { padding: 85px 0; }.capability-grid { grid-template-columns: 1fr; }.capability { min-height: 220px; }.footer-inner { flex-direction: column; gap: 16px; text-align: center; }
 }
 
+/* Dark Mode Overrides & Animations */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page {
+  animation: page-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Global Transition for Theme Switching & Interaction */
+body, div, header, main, footer, section, article, nav, aside, p, span, h1, h2, h3, h4, h5, h6, table, th, td, input, select, textarea, button, a {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+/* Hover & Interactive enhancements for buttons/inputs */
+.nav-cta:hover, button:hover, .button-primary:hover {
+  transform: translateY(-1px);
+}
+input:hover, select:hover, textarea:hover {
+  border-color: #a5b4fc;
+}
+
 /* Dark Mode Overrides */
 html.dark {
   background-color: #0b1329;
@@ -136,48 +165,122 @@ html.dark body {
 html.dark .min-h-screen {
   background-color: #0b1329 !important;
 }
-html.dark .bg-slate-50, html.dark .bg-slate-50\/50 {
+
+/* Dark Mode Backgrounds */
+html.dark .bg-slate-50, 
+html.dark .bg-slate-50\/50, 
+html.dark .bg-gray-50, 
+html.dark .bg-gray-50\/50 {
   background-color: #0f172a !important;
 }
-html.dark .bg-white {
+html.dark .bg-white, 
+html.dark .bg-white\/80 {
   background-color: #1e293b !important;
 }
-html.dark .bg-white\/80 {
-  background-color: #1e293bcf !important;
+html.dark .bg-slate-100, 
+html.dark .bg-gray-100 {
+  background-color: #0f172a !important;
 }
-html.dark .text-slate-900 {
+html.dark .bg-slate-200, 
+html.dark .bg-gray-200 {
+  background-color: #334155 !important;
+}
+
+/* Dark Mode Badges (Role tags, status indicators) */
+html.dark .bg-purple-50 {
+  background-color: rgba(147, 51, 234, 0.15) !important;
+  color: #e9d5ff !important;
+}
+html.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #a7f3d0 !important;
+}
+html.dark .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #c7d2fe !important;
+}
+html.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fde68a !important;
+}
+html.dark .bg-rose-50, 
+html.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fecaca !important;
+}
+
+/* Dark Mode Text Visibility & High Contrast */
+html.dark .text-slate-900, 
+html.dark .text-slate-850, 
+html.dark .text-slate-800, 
+html.dark .text-gray-900, 
+html.dark .text-gray-800 {
   color: #f8fafc !important;
 }
-html.dark .text-slate-800 {
-  color: #f1f5f9 !important;
-}
-html.dark .text-slate-700 {
+html.dark .text-slate-700, 
+html.dark .text-slate-650, 
+html.dark .text-slate-600, 
+html.dark .text-gray-700, 
+html.dark .text-gray-600 {
   color: #e2e8f0 !important;
 }
-html.dark .text-slate-650, html.dark .text-slate-600, html.dark .text-slate-500 {
+html.dark .text-slate-500, 
+html.dark .text-gray-500 {
   color: #cbd5e1 !important;
 }
-html.dark .text-slate-400 {
+html.dark .text-slate-400, 
+html.dark .text-gray-400 {
   color: #94a3b8 !important;
 }
+html.dark .text-blue-600, 
+html.dark .text-indigo-600 {
+  color: #818cf8 !important;
+}
+html.dark .text-blue-500, 
+html.dark .text-indigo-500 {
+  color: #a5b4fc !important;
+}
+html.dark .text-emerald-700, 
+html.dark .text-emerald-600 {
+  color: #34d399 !important;
+}
+html.dark .text-purple-700, 
+html.dark .text-purple-600 {
+  color: #c084fc !important;
+}
+html.dark .text-red-700, 
+html.dark .text-rose-700, 
+html.dark .text-red-650 {
+  color: #fca5a5 !important;
+}
+
+/* Dark Mode Interactive States */
+html.dark .hover\:bg-slate-50:hover, 
+html.dark .hover\:bg-slate-50\/50:hover,
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+html.dark a:hover {
+  color: #ffffff !important;
+}
+
+/* Dark Mode Borders */
 html.dark .border-slate-100,
 html.dark .border-slate-200,
-html.dark .border-slate-300 {
+html.dark .border-slate-350,
+html.dark .border-slate-300,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300 {
   border-color: #334155 !important;
 }
 html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
 html.dark .divide-slate-200 {
   border-color: #334155 !important;
 }
-html.dark .bg-slate-100 {
-  background-color: #334155 !important;
-}
-html.dark .hover\:bg-slate-50:hover, html.dark .hover\:bg-slate-50\/50:hover {
-  background-color: #1e293b !important;
-}
-html.dark table thead.bg-slate-50 {
-  background-color: #0b1329 !important;
-}
+
+/* Forms & Inputs in Dark Mode */
 html.dark input, html.dark select, html.dark textarea {
   background-color: #0f172a !important;
   color: #f8fafc !important;
@@ -188,12 +291,21 @@ html.dark input:disabled {
   color: #94a3b8 !important;
   border-color: #334155 !important;
 }
+html.dark input:hover, html.dark select:hover, html.dark textarea:hover {
+  border-color: #818cf8 !important;
+}
+
+/* Dark Mode Calendar */
 html.dark .leave-calendar .rbc-calendar {
   color: #f8fafc;
 }
 html.dark .leave-calendar .rbc-toolbar button {
   border-color: #334155;
   color: #cbd5e1;
+}
+html.dark .leave-calendar .rbc-toolbar button:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
 }
 html.dark .leave-calendar .rbc-month-view,
 html.dark .leave-calendar .rbc-header,
@@ -206,4 +318,80 @@ html.dark .leave-calendar .rbc-today {
 html.dark .leave-calendar .rbc-off-range-bg {
   background: #0f172a;
 }
+
+/* Custom 3D Parallax & Keyframe Animations */
+@keyframes float {
+  0% { transform: translateZ(100px) translateY(0px); }
+  50% { transform: translateZ(110px) translateY(-12px); }
+  100% { transform: translateZ(100px) translateY(0px); }
+}
+
+@keyframes pulse-glow {
+  0% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.06); }
+  100% { opacity: 0.35; transform: scale(1); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-visual {
+  position: relative;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-visual:hover {
+  transform: rotateX(8deg) rotateY(-12deg);
+}
+
+.dashboard-card {
+  transform: translateZ(30px);
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.8s ease;
+}
+.hero-visual:hover .dashboard-card {
+  transform: translateZ(60px) scale(1.03);
+  box-shadow: 35px 55px 110px rgba(0, 0, 0, 0.6);
+}
+
+.floating-note {
+  animation: float 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-visual:hover .floating-note {
+  animation: none;
+  transform: translateZ(130px) translateY(-20px) translateX(10px);
+}
+
+.hero-glow-one {
+  animation: pulse-glow 8s ease-in-out infinite;
+}
+.hero-glow-two {
+  animation: pulse-glow 10s ease-in-out infinite alternate;
+}
+
+.hero-copy {
+  animation: fade-in-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.capability {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.capability:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border-color: #c9f37b !important;
+}
+
+
 

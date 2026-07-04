@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   UsersRound,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import Footer from '../../components/Footer.jsx'
 import Navbar from '../../components/Navbar.jsx'
@@ -39,8 +40,8 @@ export default function LandingPage() {
                 Bring your people, time, leave, and payroll into one calm workspace—so HR can focus on culture, not busywork.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#platform">Discover PeopleFlow <ArrowRight size={17} /></a>
-                <a className="text-link" href="#workflow">See how it works <span>↓</span></a>
+                <Link className="button button-primary" to="/register">Get Started Free <ArrowRight size={17} /></Link>
+                <a className="text-link" href="#platform">Discover features <span>↓</span></a>
               </div>
               <div className="trust-row">
                 <span><CheckCircle2 size={16} /> Clear by design</span>

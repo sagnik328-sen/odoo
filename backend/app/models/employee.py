@@ -21,6 +21,7 @@ class EmployeeProfile(Base):
     department: Mapped[str | None] = mapped_column(String(100), nullable=True)
     designation: Mapped[str | None] = mapped_column(String(100), nullable=True)
     manager_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    hr_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     joining_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     base_salary: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     allowances: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
@@ -35,6 +36,7 @@ class EmployeeProfile(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", foreign_keys=[user_id], back_populates="profile")
     manager: Mapped[Optional["User"]] = relationship("User", foreign_keys=[manager_id])
+    hr: Mapped[Optional["User"]] = relationship("User", foreign_keys=[hr_id])
     documents: Mapped[list["EmployeeDocument"]] = relationship("EmployeeDocument", back_populates="profile", cascade="all, delete-orphan")
 
 

@@ -24,6 +24,8 @@ class EmployeeProfileResponse(BaseModel):
     designation: str | None = None
     manager_id: UUID | None = None
     manager_name: str | None = None
+    hr_id: UUID | None = None
+    hr_name: str | None = None
     joining_date: datetime | None = None
     base_salary: float = 0.0
     allowances: float = 0.0
@@ -55,6 +57,7 @@ class EmployeeCreate(BaseModel):
     department: str | None = None
     designation: str | None = None
     manager_id: UUID | None = None
+    hr_id: UUID | None = None
     joining_date: datetime | None = None
     base_salary: float = 0.0
     allowances: float = 0.0
@@ -75,6 +78,7 @@ class EmployeeUpdate(BaseModel):
     department: str | None = None
     designation: str | None = None
     manager_id: UUID | None = None
+    hr_id: UUID | None = None
     joining_date: datetime | None = None
     base_salary: float | None = None
     allowances: float | None = None

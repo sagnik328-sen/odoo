@@ -27,7 +27,8 @@ def test_employee_cannot_access_directory():
         email=emp_email,
         hashed_password=get_password_hash("TestPassword123!"),
         role=UserRole.EMPLOYEE,
-        is_active=True
+        is_active=True,
+        is_email_verified=True
     )
     db.add(user)
     db.commit()
@@ -65,7 +66,8 @@ def test_hr_admin_crud_flow():
         email=hr_email,
         hashed_password=get_password_hash("TestPassword123!"),
         role=UserRole.HR,
-        is_active=True
+        is_active=True,
+        is_email_verified=True
     )
     db.add(hr_user)
     db.commit()

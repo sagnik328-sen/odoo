@@ -23,6 +23,7 @@ def create_user(role: UserRole) -> tuple[User, str]:
         hashed_password=get_password_hash(password),
         role=role,
         is_active=True,
+        is_email_verified=True,
     )
     database.add(user)
     database.commit()

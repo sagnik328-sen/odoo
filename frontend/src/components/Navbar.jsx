@@ -1,4 +1,5 @@
 import { Menu, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const links = [
   { label: 'Platform', href: '#platform' },
@@ -21,12 +22,13 @@ export default function Navbar() {
           ))}
         </div>
 
-        <a className="nav-cta" href="#platform">Explore platform <span>↗</span></a>
-        <button className="menu-button" type="button" aria-label="Open navigation">
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-5">
+          <Link className="text-slate-300 hover:text-white text-sm font-semibold transition" to="/login">Sign In</Link>
+          <Link className="nav-cta hover:border-white transition" to="/register">Get Started <span>↗</span></Link>
+        </div>
       </nav>
     </header>
   )
 }
+
 

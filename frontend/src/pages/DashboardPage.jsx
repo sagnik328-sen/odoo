@@ -3,12 +3,14 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import { LogOut, User, Activity, Menu, X, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DashboardErrorBoundary from '../components/DashboardErrorBoundary';
+import AIAssistant from '../components/AIAssistant';
 
 const EmployeeDashboard = lazy(() => import('../components/dashboard/EmployeeDashboard'));
 const HRDashboard = lazy(() => import('../components/dashboard/HRDashboard'));
 const AdminDashboard = lazy(() => import('../components/dashboard/AdminDashboard'));
 
 const DashboardPage = () => {
+
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -66,7 +68,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans antialiased text-slate-800">
+    <div className="min-h-screen bg-slate-50/50 flex flex-col font-sans antialiased text-slate-800 animate-page">
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -85,7 +87,9 @@ const DashboardPage = () => {
 
             {/* Desktop User Info & Actions */}
             <div className="hidden md:flex items-center gap-4">
-              <Link to="/leave" className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50">Leave & Time Off</Link>
+              {user?.role !== 'admin' && (
+                <Link to="/leave" className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50">Leave & Time Off</Link>
+              )}
               <Link to="/settings" className="rounded-xl bg-indigo-50 dark:bg-indigo-950/40 px-3 py-2 text-sm font-bold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50">Settings</Link>
               
               {/* Dark Mode toggle button */}
@@ -99,7 +103,7 @@ const DashboardPage = () => {
 
               <div className="flex items-center gap-3 pr-3 border-r border-slate-100 dark:border-slate-800">
                 <div className="text-right">
-                  <span className="block text-sm font-bold text-slate-900 dark:text-slate-150">{user?.full_name}</span>
+                  <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">{user?.full_name}</span>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 mt-0.5 text-[10px] font-bold uppercase tracking-wider ${theme.bg}`}>
                     {theme.badge}
                   </span>
@@ -111,7 +115,7 @@ const DashboardPage = () => {
 
               <button
                 onClick={logout}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-650 dark:text-slate-350 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-red-650 active:scale-98"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-red-650 active:scale-98"
                 title="Sign Out"
               >
                 <LogOut className="h-4 w-4" />
@@ -136,11 +140,11 @@ const DashboardPage = () => {
         {mobileMenuOpen && (
           <div className="border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-4 md:hidden space-y-4 animate-in slide-in-from-top-5 duration-200">
             <div className="flex items-center gap-3 py-2 border-b border-slate-50 dark:border-slate-900">
-              <div className="h-11 w-11 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-350">
+              <div className="h-11 w-11 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300">
                 {user?.full_name?.split(' ').map(n => n[0]).join('')}
               </div>
               <div>
-                <span className="block text-sm font-bold text-slate-900 dark:text-slate-150">{user?.full_name}</span>
+                <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">{user?.full_name}</span>
                 <span className="block text-xs text-slate-500 truncate max-w-[200px]">{user?.email}</span>
                 <span className={`inline-block rounded-full px-2 py-0.5 mt-1 text-[9px] font-bold uppercase tracking-wider ${theme.bg}`}>
                   {theme.badge}
@@ -153,7 +157,9 @@ const DashboardPage = () => {
             >
               <LogOut className="h-4 w-4" /> Logout from Session
             </button>
-            <Link to="/leave" className="flex w-full items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 py-3 text-sm font-bold text-emerald-700 dark:text-emerald-400">Leave & Time Off</Link>
+            {user?.role !== 'admin' && (
+              <Link to="/leave" className="flex w-full items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 py-3 text-sm font-bold text-emerald-700 dark:text-emerald-400">Leave & Time Off</Link>
+            )}
             <Link to="/settings" className="flex w-full items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-400">Settings</Link>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -183,6 +189,7 @@ const DashboardPage = () => {
           </p>
         </div>
       </footer>
+      <AIAssistant />
     </div>
   );
 };

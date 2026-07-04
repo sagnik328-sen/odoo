@@ -459,6 +459,10 @@ const EmployeeDashboard = () => {
                 <strong className="text-gray-700 truncate block max-w-full">{user?.email}</strong>
               </div>
               <div>
+                <span className="text-gray-400 block text-xs uppercase tracking-wider">Assigned HR</span>
+                <strong className="text-gray-700 truncate block max-w-full">{profileData?.profile?.hr_name || 'None Assigned'}</strong>
+              </div>
+              <div>
                 <span className="text-gray-400 block text-xs uppercase tracking-wider">Status</span>
                 <span className="inline-flex items-center gap-1 mt-0.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
                   Active
@@ -1006,6 +1010,10 @@ const EmployeeDashboard = () => {
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Direct Manager</span>
                     <span className="font-bold text-slate-800">{profileData?.profile?.manager_name || 'HR Department'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-50 pb-2">
+                    <span className="text-slate-400">Assigned HR Officer</span>
+                    <span className="font-bold text-slate-800">{profileData?.profile?.hr_name || 'None Assigned'}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-400">Joining Date</span>

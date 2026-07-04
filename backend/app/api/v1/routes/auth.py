@@ -14,6 +14,7 @@ from app.schemas.auth import (
     TokenResponse,
     UserCreate,
     UserResponse,
+    VerifyEmailRequest,
 )
 from app.schemas.settings import ChangePasswordRequest
 from app.services.auth import AuthService
@@ -60,6 +61,12 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
 def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
     auth_service = AuthService(db)
     return auth_service.reset_password(request)
+
+
+@router.post("/auth/verify-email", response_model=MessageResponse)
+def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db)):
+    auth_service = AuthService(db)
+    return auth_service.verify_email(request)
 
 
 @router.get("/auth/me", response_model=UserResponse)

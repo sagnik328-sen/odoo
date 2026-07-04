@@ -14,6 +14,9 @@ PeopleFlow is a full-stack Human Resource Management System for authentication, 
 
 - JWT access and refresh token authentication with logout revocation
 - Employee, HR, and Admin role-based access control
+- Self-registration with role selection (Employee vs HR Operations)
+- Required email verification flow for self-registered users
+- SMTP email service integration for verification and password reset links with premium HTML templates
 - Employee profiles, documents, profile photos, directory search, and pagination
 - Check-in/check-out, calculated work hours, history, corrections, and reminders
 - Paid, Sick, Casual, and Unpaid leave with calendar selection and HR review
@@ -123,6 +126,13 @@ flowchart LR
 
 SQLite is embedded; no separate database server is needed.
 
+## Default Credentials
+
+A default system administrator account is pre-seeded in the database for local quick-start:
+- **Email:** `admin@peopleflow.com`
+- **Password:** `AdminPassword123!`
+- **Employee ID:** `ADMIN001`
+
 ## Installation
 
 ```bash
@@ -186,6 +196,12 @@ Backend configuration uses the `HRMS_` prefix to prevent collisions with host va
 | `HRMS_SECRET_KEY` | JWT signing secret; replace outside local development |
 | `HRMS_ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime |
 | `HRMS_REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime |
+| `HRMS_SMTP_HOST` | SMTP server host (e.g. `smtp.gmail.com`) |
+| `HRMS_SMTP_PORT` | SMTP port, defaults to `587` |
+| `HRMS_SMTP_USER` | SMTP username |
+| `HRMS_SMTP_PASSWORD` | SMTP password / app password |
+| `HRMS_SMTP_FROM_EMAIL` | Sender address, defaults to `noreply@hrms.local` |
+| `HRMS_FRONTEND_URL` | Base URL of frontend application, defaults to `http://localhost:5173` |
 
 The frontend uses `VITE_API_URL`, defaulting to `http://localhost:8000/api/v1`.
 
@@ -207,7 +223,7 @@ Protected operations use `Authorization: Bearer <access-token>`. Swagger’s **A
 | --- | --- | --- |
 | Health | `GET /api/v1/health` | Public |
 | Auth | `POST /auth/register`, `/login`, `/logout`, `/refresh` | Mixed |
-| Auth | `POST /auth/forgot-password`, `/reset-password` | Public |
+| Auth | `POST /auth/forgot-password`, `/reset-password`, `/verify-email` | Public |
 | Auth | `GET /auth/me` | Authenticated |
 | Employees | `GET/POST /employees` | HR/Admin |
 | Employees | `GET/PUT /employees/{id}` | Self or HR/Admin |
@@ -224,6 +240,7 @@ Protected operations use `Authorization: Bearer <access-token>`. Swagger’s **A
 | Payroll | `GET /payroll/me`, `GET /payroll/{id}/pdf` | Authenticated/owner |
 | Reports | `GET /reports/dashboard`, `/attendance`, `/leave`, `/payroll` | Role-filtered |
 | Reports | `GET /reports/employees`, `/analytics/*`, `/export/*/{format}` | HR/Admin |
+| AI Assistant | `POST /ai/chat` | Authenticated |
 
 The OpenAPI document is authoritative for query parameters, request bodies, enums, and response schemas.
 

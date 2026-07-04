@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     smtp_user: str | None = None
     smtp_password: str | None = None
     smtp_from_email: str = "noreply@hrms.local"
+    frontend_url: str = "http://localhost:5173"
+    gemini_api_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",

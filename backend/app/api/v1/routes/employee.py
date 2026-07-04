@@ -24,19 +24,26 @@ router = APIRouter()
 
 
 def get_employee_response(user: User, db: Session) -> User:
-    """Helper to ensure a user has an EmployeeProfile and resolve manager name."""
+    """Helper to ensure a user has an EmployeeProfile and resolve manager and HR names."""
     if not user.profile:
         emp_repo = EmployeeRepository(db)
         profile = EmployeeProfile(user_id=user.id)
         user.profile = emp_repo.create_profile(profile)
 
-    if user.profile and user.profile.manager_id:
-        user_repo = UserRepository(db)
-        manager = user_repo.get_by_id(user.profile.manager_id)
-        if manager:
-            user.profile.manager_name = manager.full_name
+    user_repo = UserRepository(db)
+    if user.profile:
+        if user.profile.manager_id:
+            manager = user_repo.get_by_id(user.profile.manager_id)
+            user.profile.manager_name = manager.full_name if manager else None
         else:
             user.profile.manager_name = None
+
+        if hasattr(user.profile, 'hr_id') and user.profile.hr_id:
+            hr_user = user_repo.get_by_id(user.profile.hr_id)
+            user.profile.hr_name = hr_user.full_name if hr_user else None
+        else:
+            user.profile.hr_name = None
+
     return user
 
 
@@ -137,6 +144,7 @@ def create_employee(
         department=employee_in.department,
         designation=employee_in.designation,
         manager_id=employee_in.manager_id,
+        hr_id=employee_in.hr_id,
         joining_date=employee_in.joining_date,
         base_salary=employee_in.base_salary,
         allowances=employee_in.allowances,
@@ -209,6 +217,8 @@ def update_employee(
             profile.designation = employee_in.designation
         if employee_in.manager_id is not None:
             profile.manager_id = employee_in.manager_id
+        if employee_in.hr_id is not None:
+            profile.hr_id = employee_in.hr_id
         if employee_in.joining_date is not None:
             profile.joining_date = employee_in.joining_date
         if employee_in.base_salary is not None:

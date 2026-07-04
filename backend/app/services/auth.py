@@ -1,8 +1,12 @@
 from datetime import timedelta
+import threading
 from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.utils.email import send_welcome_email, send_password_reset_email, send_verification_email
 
 from app.core.logging import get_logger
 from app.models.user import User, UserRole
@@ -15,6 +19,7 @@ from app.schemas.auth import (
     TokenResponse,
     UserCreate,
     UserResponse,
+    VerifyEmailRequest,
 )
 from app.utils.security import (
     create_access_token,
@@ -58,7 +63,7 @@ class AuthService:
             full_name=user_in.full_name,
             email=user_in.email,
             hashed_password=hashed_password,
-            role=UserRole.EMPLOYEE
+            role=user_in.role
         )
         user = self.user_repo.create(user)
         
@@ -68,6 +73,14 @@ class AuthService:
             expires_delta=timedelta(hours=24)
         )
         logger.info("email_verification_token_created user_id=%s", user.id)
+        
+        # Send verification email asynchronously
+        verification_link = f"{settings.frontend_url}/verify-email?token={_verification_token}"
+        threading.Thread(
+            target=send_verification_email,
+            args=(user.email, user.full_name, verification_link),
+            daemon=True
+        ).start()
         
         return UserResponse.model_validate(user)
 
@@ -83,6 +96,12 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Inactive user"
+            )
+            
+        if not user.is_email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email verification is required. Please verify your email first."
             )
         
         access_token = create_access_token(data={"sub": str(user.id)})
@@ -155,6 +174,14 @@ class AuthService:
                 expires_delta=timedelta(hours=1)
             )
             logger.info("password_reset_token_created user_id=%s", user.id)
+            
+            # Send password reset email asynchronously
+            reset_link = f"{settings.frontend_url}/reset-password?token={_reset_token}"
+            threading.Thread(
+                target=send_password_reset_email,
+                args=(user.email, user.full_name, reset_link),
+                daemon=True
+            ).start()
         
         return MessageResponse(message="If an account with that email exists, a reset link has been sent")
 
@@ -202,4 +229,42 @@ class AuthService:
         user.hashed_password = get_password_hash(new_password)
         self.user_repo.update(user)
         return MessageResponse(message="Password changed successfully")
+
+    def verify_email(self, request: VerifyEmailRequest) -> MessageResponse:
+        payload = decode_token(request.token)
+        if payload is None or payload.get("purpose") != "email_verification":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired verification token"
+            )
+        
+        user_id_str: str | None = payload.get("sub")
+        if not user_id_str:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification token"
+            )
+        
+        try:
+            user_id = UUID(user_id_str)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification token"
+            ) from None
+        
+        user = self.user_repo.get_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        if user.is_email_verified:
+            return MessageResponse(message="Email is already verified")
+            
+        user.is_email_verified = True
+        self.user_repo.update(user)
+        
+        return MessageResponse(message="Email successfully verified")
 

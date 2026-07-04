@@ -41,6 +41,7 @@ const EmployeeDirectory = ({ currentUser }) => {
     department: '',
     designation: '',
     manager_id: '',
+    hr_id: '',
     joining_date: '',
     base_salary: 0,
     allowances: 0,
@@ -62,8 +63,9 @@ const EmployeeDirectory = ({ currentUser }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Dropdown Manager Options
+  // Dropdown Manager & HR Options
   const [managers, setManagers] = useState([]);
+  const [hrs, setHrs] = useState([]);
 
   // Fetch Directory
   const fetchDirectory = async () => {
@@ -90,14 +92,16 @@ const EmployeeDirectory = ({ currentUser }) => {
     }
   };
 
-  // Fetch Managers List (HR & Admin)
+  // Fetch Managers & HR List
   const fetchManagers = async () => {
     try {
       const data = await employeeApi.getEmployees({ size: 100 });
-      const filtered = data.items.filter(u => u.role === 'hr' || u.role === 'admin');
-      setManagers(filtered);
+      const filteredManagers = data.items.filter(u => u.role === 'hr' || u.role === 'admin');
+      setManagers(filteredManagers);
+      const filteredHrs = data.items.filter(u => u.role === 'hr');
+      setHrs(filteredHrs);
     } catch (err) {
-      console.error("Failed to load managers:", err);
+      console.error("Failed to load managers/hrs:", err);
     }
   };
 
@@ -160,6 +164,7 @@ const EmployeeDirectory = ({ currentUser }) => {
         department: '',
         designation: '',
         manager_id: '',
+        hr_id: '',
         joining_date: '',
         base_salary: 0,
         allowances: 0,
@@ -192,6 +197,7 @@ const EmployeeDirectory = ({ currentUser }) => {
       department: emp.profile?.department || '',
       designation: emp.profile?.designation || '',
       manager_id: emp.profile?.manager_id || '',
+      hr_id: emp.profile?.hr_id || '',
       joining_date: emp.profile?.joining_date ? emp.profile.joining_date.substring(0, 10) : '',
       base_salary: emp.profile?.base_salary || 0,
       allowances: emp.profile?.allowances || 0,
@@ -212,6 +218,7 @@ const EmployeeDirectory = ({ currentUser }) => {
       const payload = {
         ...formFields,
         manager_id: formFields.manager_id || null,
+        hr_id: formFields.hr_id || null,
         joining_date: formFields.joining_date ? new Date(formFields.joining_date).toISOString() : null,
         base_salary: parseFloat(formFields.base_salary) || 0,
         allowances: parseFloat(formFields.allowances) || 0,
@@ -356,10 +363,13 @@ const EmployeeDirectory = ({ currentUser }) => {
                 department: '',
                 designation: '',
                 manager_id: '',
+                hr_id: '',
                 joining_date: '',
                 base_salary: 0,
                 allowances: 0,
-                deductions: 0
+                bonuses: 0,
+                deductions: 0,
+                tax: 0
               });
               setIsCreateModalOpen(true);
             }}
@@ -459,6 +469,7 @@ const EmployeeDirectory = ({ currentUser }) => {
                   <th className="px-5 py-3.5">Department</th>
                   <th className="px-5 py-3.5">Designation</th>
                   <th className="px-5 py-3.5">Role</th>
+                  <th className="px-5 py-3.5">Assigned HR</th>
                   <th className="px-5 py-3.5 text-center">Actions</th>
                 </tr>
               </thead>
@@ -496,6 +507,7 @@ const EmployeeDirectory = ({ currentUser }) => {
                         {emp.role}
                       </span>
                     </td>
+                    <td className="px-5 py-3.5 text-slate-700">{emp.profile?.hr_name || 'None'}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -722,6 +734,22 @@ const EmployeeDirectory = ({ currentUser }) => {
                       ))}
                     </select>
                   </div>
+
+                  {formFields.role === 'employee' && (
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned HR Officer</label>
+                      <select
+                        value={formFields.hr_id}
+                        onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
+                      >
+                        <option value="">None / No HR Assigned</option>
+                        {hrs.map(hr => (
+                          <option key={hr.id} value={hr.id}>{hr.full_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Joining Date</label>
@@ -961,6 +989,22 @@ const EmployeeDirectory = ({ currentUser }) => {
                       ))}
                     </select>
                   </div>
+
+                  {formFields.role === 'employee' && (
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned HR Officer</label>
+                      <select
+                        value={formFields.hr_id}
+                        onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
+                      >
+                        <option value="">None / No HR Assigned</option>
+                        {hrs.map(hr => (
+                          <option key={hr.id} value={hr.id}>{hr.full_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Joining Date</label>
