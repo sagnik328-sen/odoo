@@ -400,6 +400,32 @@ Frontend:
   - Monthly calendar view (placeholder)
 - Updated `EmployeeDashboard.jsx` to use real attendance API instead of mock data.
 
+## Milestone 9 scope
+
+Implemented:
+
+Backend:
+- Created `ReportsService` for generating reports and analytics
+- Added `reports.py` schemas for all report types
+- Implemented export utilities for CSV, Excel (using openpyxl), and PDF (using reportlab)
+- Added reports API routes for:
+  - Dashboard summary
+  - Attendance reports with filters
+  - Leave reports (placeholder)
+  - Payroll reports (placeholder)
+  - Employee reports
+  - Analytics endpoints
+  - Export endpoints for CSV/Excel/PDF
+- Added role-based access control for reports (employees can only access their own data)
+
+Frontend:
+- Created `reports.js` API client
+- Implemented reusable reports components:
+  - `StatisticsCard` for displaying key metrics
+  - `ExportButtons` for CSV/Excel/PDF exports
+  - `ReportTable` for displaying report data
+- Created `ReportsDashboard` page with summary cards and quick links
+
 ## Milestone 6 scope
 
 Implemented:
@@ -504,5 +530,9 @@ Frontend:
 | PUT | `/api/v1/notifications/{id}/read` | Authenticated | Mark a notification as read |
 | PUT | `/api/v1/notifications/read-all` | Authenticated | Mark all unread notifications as read |
 | POST | `/api/v1/attendance/remind-all` | HR/Admin | Trigger clock-in reminders to unchecked-in staff |
+
+## License
+
+No license has been selected yet.
 
 
