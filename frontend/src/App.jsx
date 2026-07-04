@@ -6,6 +6,9 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
+import { lazy, Suspense } from 'react';
+
+const LeavePage = lazy(() => import('./pages/LeavePage'));
 
 function App() {
   return (
@@ -25,6 +28,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/leave" element={<ProtectedRoute><Suspense fallback={<div className="grid min-h-screen place-items-center text-sm text-slate-500">Loading time off…</div>}><LeavePage /></Suspense></ProtectedRoute>} />
           <Route path="/unauthorized" element={
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
               <div className="text-center">

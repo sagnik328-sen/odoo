@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 5 is complete. This repository contains the project foundation, authentication system, role-specific dashboards, employee profile and directory management, and a complete attendance management module.
+> **Current status:** Milestone 6 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance, and database-backed leave and time-off management with notifications.
 
 ## Technology stack
 
@@ -399,4 +399,49 @@ Frontend:
   - Weekly attendance overview
   - Monthly calendar view (placeholder)
 - Updated `EmployeeDashboard.jsx` to use real attendance API instead of mock data.
+
+## Milestone 6 scope
+
+Implemented:
+
+Backend:
+
+- Added `LeaveRequest` and `Notification` SQLAlchemy models with UUID identifiers, foreign keys, timestamps, and indexed workflow fields.
+- Added Paid, Sick, Casual, and Unpaid leave types and Pending, Approved, and Rejected states.
+- Added an Alembic migration for `leave_requests` and `notifications`, including a database date-range constraint.
+- Added overlap detection for active leave requests and server-side validation for invalid or excessive date ranges.
+- Added role-protected HR/Admin review actions with mandatory comments and protection against repeat or self-review.
+- Approval automatically creates or updates weekday attendance records with `Leave` status.
+- Approval refuses to overwrite attendance that already contains check-in or check-out activity.
+- Approval and rejection create persistent in-app notifications for the employee.
+- Added notification list and mark-as-read operations.
+- Added an end-to-end integration test covering application, overlap prevention, HR approval, attendance synchronization, notification delivery, and read state.
+
+Frontend:
+
+- Added a protected `/leave` workspace linked from the dashboard.
+- Added React Big Calendar date-range selection and a leave application form with remarks.
+- Added employee leave history with status and reviewer comments.
+- Added an HR/Admin team calendar and approval/rejection queue.
+- Added an in-app notification inbox with unread state.
+- Lazy-loaded the calendar workspace to keep it out of the initial application bundle.
+
+### Leave API
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/leaves/apply` | Authenticated | Apply for leave |
+| GET | `/api/v1/leaves/me` | Authenticated | View personal leave history |
+| GET | `/api/v1/leaves` | HR/Admin | List and optionally filter requests by status |
+| PUT | `/api/v1/leaves/{id}/approve` | HR/Admin | Approve leave with a comment |
+| PUT | `/api/v1/leaves/{id}/reject` | HR/Admin | Reject leave with a comment |
+| GET | `/api/v1/notifications` | Authenticated | List personal notifications |
+| PUT | `/api/v1/notifications/{id}/read` | Authenticated | Mark a notification as read |
+
+Apply the Milestone 6 schema before starting the API:
+
+```bash
+cd backend
+python -m alembic upgrade head
+```
 

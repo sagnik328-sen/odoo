@@ -4,6 +4,7 @@ import HRDashboard from '../components/dashboard/HRDashboard';
 import AdminDashboard from '../components/dashboard/AdminDashboard';
 import { LogOut, User, Activity, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
@@ -69,6 +70,7 @@ const DashboardPage = () => {
 
             {/* Desktop User Info & Actions */}
             <div className="hidden md:flex items-center gap-4">
+              <Link to="/leave" className="rounded-xl bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700 hover:bg-emerald-100">Leave & Time Off</Link>
               <div className="flex items-center gap-3 pr-3 border-r border-slate-100">
                 <div className="text-right">
                   <span className="block text-sm font-bold text-slate-900">{user?.full_name}</span>
@@ -125,6 +127,7 @@ const DashboardPage = () => {
             >
               <LogOut className="h-4 w-4" /> Logout from Session
             </button>
+            <Link to="/leave" className="flex w-full items-center justify-center rounded-xl bg-emerald-50 py-3 text-sm font-bold text-emerald-700">Leave & Time Off</Link>
           </div>
         )}
       </header>
