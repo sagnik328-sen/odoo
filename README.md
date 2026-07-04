@@ -2,7 +2,8 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 9 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, an integrated real-time notification engine with automatic triggers and reminder tools, and a comprehensive reports & analytics system with CSV, Excel, and PDF export capabilities.
+> **Current status:** Milestone 10 is complete. The system now includes authentication, role-specific dashboards, employee profiles, attendance tracking, database-backed leave management, a robust payroll management system with ReportLab PDF payslip generation, an integrated real-time notification engine, a comprehensive reports & analytics system, and a Settings & User Management module with company profile configuration, leave policies, shift working hours, a holiday calendar, role authorization matrix, password changing, profile updates, and Dark Mode.
+
 
 ## Technology stack
 
@@ -532,8 +533,42 @@ Frontend:
   - `ReportTable` for displaying report data
 - Created `ReportsDashboard` page with summary cards and quick links
 
+### Settings & Policies API
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/settings/company` | Authenticated | Fetch company profile information |
+| PUT | `/api/v1/settings/company` | Admin | Update company profile details |
+| GET | `/api/v1/settings/leave-policy` | Authenticated | Fetch leave policy settings |
+| PUT | `/api/v1/settings/leave-policy` | Admin | Update leave policy settings |
+| GET | `/api/v1/settings/working-hours` | Authenticated | Fetch shift hours & work days |
+| PUT | `/api/v1/settings/working-hours` | Admin | Update shift hours & work days |
+| GET | `/api/v1/settings/holidays` | Authenticated | List all company holidays |
+| POST | `/api/v1/settings/holidays` | Admin | Add a new holiday |
+| DELETE | `/api/v1/settings/holidays/{holiday_id}` | Admin | Remove a scheduled holiday |
+| GET | `/api/v1/settings/role-permissions` | Admin | Fetch role permissions matrix |
+| PUT | `/api/v1/settings/role-permissions/{role}` | Admin | Toggle permissions for a role |
+| POST | `/api/v1/auth/change-password` | Authenticated | Change password for logged-in user |
+
+## Milestone 10 scope
+
+Implemented:
+
+Backend:
+- Created new `CompanySettings`, `LeavePolicySettings`, `WorkingHoursSettings`, `Holiday`, and `RolePermission` models.
+- Set up database migrations and initial seed values for policies, working hours, and roles.
+- Created `SettingsRepository` and `SettingsService` layers.
+- Added `/settings/*` and `/auth/change-password` routes.
+- Implemented `PermissionChecker` for dynamic, database-driven role permission verification instead of static role checks.
+
+Frontend:
+- Built the `SettingsPage.jsx` panel with tabs for My Profile, Change Password, Company Info, Leave Policy, Holidays, and Role Permissions.
+- Added Settings link to desktop and mobile menus.
+- Integrated optional **Dark Mode** toggle in the main nav header and Settings page, utilizing local storage persistence and glassmorphism styling overrides in `index.css`.
+
 ## License
 
 No license has been selected yet.
+
 
 

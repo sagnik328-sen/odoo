@@ -183,3 +183,14 @@ class AuthService:
         self.user_repo.update(user)
         
         return MessageResponse(message="Password successfully reset")
+
+    def change_password(self, user: User, old_password: str, new_password: str) -> MessageResponse:
+        if not verify_password(old_password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Incorrect old password"
+            )
+        user.hashed_password = get_password_hash(new_password)
+        self.user_repo.update(user)
+        return MessageResponse(message="Password changed successfully")
+

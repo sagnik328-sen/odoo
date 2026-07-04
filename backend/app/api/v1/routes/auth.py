@@ -8,7 +8,9 @@ from app.schemas.auth import (
     UserCreate, UserResponse, LoginRequest, TokenResponse,
     RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, MessageResponse
 )
+from app.schemas.settings import ChangePasswordRequest
 from app.services.auth import AuthService
+
 
 router = APIRouter()
 security = HTTPBearer()
@@ -56,3 +58,14 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
 @router.get("/auth/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+
+@router.post("/auth/change-password", response_model=MessageResponse)
+def change_password(
+    request: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    auth_service = AuthService(db)
+    return auth_service.change_password(current_user, request.old_password, request.new_password)
+

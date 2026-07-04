@@ -71,3 +71,34 @@ class RoleChecker:
                 detail="Not enough permissions"
             )
         return current_user
+
+
+class PermissionChecker:
+    def __init__(self, permission_name: str):
+        self.permission_name = permission_name
+    
+    def __call__(self, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> User:
+        if current_user.role == UserRole.ADMIN:
+            return current_user
+            
+        from app.repositories.settings import SettingsRepository
+        settings_repo = SettingsRepository(db)
+        role_perm = settings_repo.get_role_permissions(current_user.role.value)
+        if not getattr(role_perm, self.permission_name, False):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        return current_user
+
+
+def require_roles(allowed_roles: list[str]):
+    role_enums = []
+    for r in allowed_roles:
+        try:
+            role_enums.append(UserRole(r))
+        except ValueError:
+            pass
+    return RoleChecker(role_enums)
+
+

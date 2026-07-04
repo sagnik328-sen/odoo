@@ -123,3 +123,87 @@ button { font: inherit; }
   .hero { min-height: 1020px; }.hero-grid { padding-top: 120px; gap: 54px; }.hero h1 { font-size: 48px; }.hero-description { font-size: 16px; }.hero-actions { align-items: flex-start; flex-direction: column; gap: 18px; }.trust-row { flex-wrap: wrap; margin-top: 30px; }
   .dashboard-card { padding: 14px; }.floating-note { right: -5px; bottom: -50px; }.section { padding: 85px 0; }.capability-grid { grid-template-columns: 1fr; }.capability { min-height: 220px; }.footer-inner { flex-direction: column; gap: 16px; text-align: center; }
 }
+
+/* Dark Mode Overrides */
+html.dark {
+  background-color: #0b1329;
+  color: #f8fafc;
+}
+html.dark body {
+  background-color: #0b1329;
+  color: #f8fafc;
+}
+html.dark .min-h-screen {
+  background-color: #0b1329 !important;
+}
+html.dark .bg-slate-50, html.dark .bg-slate-50\/50 {
+  background-color: #0f172a !important;
+}
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+html.dark .bg-white\/80 {
+  background-color: #1e293bcf !important;
+}
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+html.dark .text-slate-650, html.dark .text-slate-600, html.dark .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 {
+  border-color: #334155 !important;
+}
+html.dark .bg-slate-100 {
+  background-color: #334155 !important;
+}
+html.dark .hover\:bg-slate-50:hover, html.dark .hover\:bg-slate-50\/50:hover {
+  background-color: #1e293b !important;
+}
+html.dark table thead.bg-slate-50 {
+  background-color: #0b1329 !important;
+}
+html.dark input, html.dark select, html.dark textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+html.dark input:disabled {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+html.dark .leave-calendar .rbc-calendar {
+  color: #f8fafc;
+}
+html.dark .leave-calendar .rbc-toolbar button {
+  border-color: #334155;
+  color: #cbd5e1;
+}
+html.dark .leave-calendar .rbc-month-view,
+html.dark .leave-calendar .rbc-header,
+html.dark .leave-calendar .rbc-day-bg {
+  border-color: #334155;
+}
+html.dark .leave-calendar .rbc-today {
+  background: #1e293b;
+}
+html.dark .leave-calendar .rbc-off-range-bg {
+  background: #0f172a;
+}
+

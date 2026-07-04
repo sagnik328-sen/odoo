@@ -4,6 +4,7 @@ from app.models.employee import EmployeeProfile, EmployeeDocument
 from app.models.attendance import Attendance, AttendanceCorrection, AttendanceStatus, ApprovalStatus
 from app.models.leave import LeaveRequest, LeaveStatus, LeaveType, Notification, NotificationType
 from app.models.payroll import Payslip, PayslipStatus
+from app.models.settings import CompanySettings, LeavePolicySettings, WorkingHoursSettings, Holiday, RolePermission
 
 __all__ = [
     "User",
@@ -21,7 +22,13 @@ __all__ = [
     "NotificationType",
     "Payslip",
     "PayslipStatus",
+    "CompanySettings",
+    "LeavePolicySettings",
+    "WorkingHoursSettings",
+    "Holiday",
+    "RolePermission",
 ]
+
 
 
 
