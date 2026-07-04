@@ -2,7 +2,7 @@
 
 PeopleFlow is a full-stack Human Resource Management System for employee records, attendance, leave, payroll, notifications, calendars, and reports.
 
-> **Current status:** Milestone 1 is complete. This repository contains the project foundation, one health endpoint, and a public landing page. Authentication and HRMS domain features are intentionally not implemented yet.
+> **Current status:** Milestone 2 is complete. This repository contains the project foundation, authentication system with JWT access/refresh tokens, and responsive auth pages (login, register, forgot password, reset password).
 
 ## Technology stack
 
@@ -11,7 +11,7 @@ PeopleFlow is a full-stack Human Resource Management System for employee records
 | Frontend | React 19, Vite, Tailwind CSS |
 | Backend | FastAPI |
 | Database | SQLite, SQLAlchemy, Alembic |
-| Authentication (planned) | JWT access/refresh tokens, bcrypt |
+| Authentication | JWT access/refresh tokens, bcrypt |
 | API | REST |
 | Server state | TanStack React Query |
 | Forms | React Hook Form |
@@ -54,17 +54,31 @@ This separation lets the API, database, and business rules evolve independently 
 ├── backend/
 │   ├── alembic/
 │   │   ├── versions/
+│   │   │   └── [revision]_add_users_table.py
 │   │   └── env.py
 │   ├── app/
 │   │   ├── api/v1/routes/     # HTTP endpoints
-│   │   ├── core/              # Settings, logging, exceptions
+│   │   │   ├── health.py
+│   │   │   └── auth.py
+│   │   ├── core/              # Settings, logging, exceptions, dependencies
+│   │   │   ├── config.py
+│   │   │   ├── exceptions.py
+│   │   │   ├── logging.py
+│   │   │   └── dependencies.py
 │   │   ├── database/          # Engine, sessions, declarative base
 │   │   ├── middleware/        # Future custom middleware
 │   │   ├── models/            # SQLAlchemy models
+│   │   │   └── user.py
 │   │   ├── repositories/      # Data-access boundary
+│   │   │   └── user.py
 │   │   ├── schemas/           # Pydantic contracts
+│   │   │   ├── health.py
+│   │   │   └── auth.py
 │   │   ├── services/          # Application use cases
+│   │   │   ├── health.py
+│   │   │   └── auth.py
 │   │   ├── utils/             # Shared helpers
+│   │   │   └── security.py
 │   │   └── main.py            # FastAPI application factory
 │   ├── tests/
 │   ├── uploads/               # Ignored runtime uploads
@@ -76,11 +90,27 @@ This separation lets the API, database, and business rules evolve independently 
 │   ├── public/
 │   ├── src/
 │   │   ├── api/
+│   │   │   ├── client.js
+│   │   │   └── auth.js
 │   │   ├── assets/
 │   │   ├── components/
+│   │   │   ├── Footer.jsx
+│   │   │   └── Navbar.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
 │   │   ├── hooks/
 │   │   ├── layouts/
-│   │   ├── pages/Landing/
+│   │   ├── pages/
+│   │   │   ├── Landing/
+│   │   │   │   └── LandingPage.jsx
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginPage.jsx
+│   │   │   │   ├── RegisterPage.jsx
+│   │   │   │   ├── ForgotPasswordPage.jsx
+│   │   │   │   └── ResetPasswordPage.jsx
+│   │   │   └── DashboardPage.jsx
+│   │   ├── routes/
+│   │   │   └── ProtectedRoute.jsx
 │   │   ├── styles/
 │   │   ├── utils/
 │   │   ├── App.jsx
@@ -88,6 +118,7 @@ This separation lets the API, database, and business rules evolve independently 
 │   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
+├── hrms.db                    # SQLite database file (ignored)
 ├── .gitignore
 └── README.md
 ```
@@ -168,6 +199,10 @@ Backend variables are documented in `backend/.env.example`:
 | `HRMS_DATABASE_URL` | SQLAlchemy connection URL |
 | `HRMS_BACKEND_CORS_ORIGINS` | JSON list of allowed frontend origins |
 | `HRMS_LOG_LEVEL` | Application logging threshold |
+| `HRMS_SECRET_KEY` | Secret key for signing JWT tokens |
+| `HRMS_ACCESS_TOKEN_EXPIRE_MINUTES` | Expiry time for access tokens in minutes |
+| `HRMS_REFRESH_TOKEN_EXPIRE_DAYS` | Expiry time for refresh tokens in days |
+| `HRMS_ALGORITHM` | Algorithm used to sign JWT tokens |
 
 The frontend uses `VITE_API_BASE_URL`. Real `.env` files are ignored by Git; commit only `.env.example` templates.
 
@@ -241,6 +276,44 @@ Not included in this milestone:
 - Employee, attendance, leave, payroll, notification, or report endpoints
 - HRMS domain database tables
 - Dashboard or authenticated application screens
+
+## Milestone 2 scope
+
+Implemented:
+
+Backend:
+- User SQLAlchemy model with UUID primary key, employee ID, email, hashed password, roles, and timestamps
+- Pydantic schemas for authentication requests and responses
+- User repository for data access
+- Authentication service implementing:
+  - User registration with email/employee ID uniqueness checks
+  - Login with JWT access/refresh token generation
+  - Token refresh
+  - Logout with token blacklist (in-memory for local dev)
+  - Forgot password (logs reset links to console locally)
+  - Reset password
+- JWT-based authentication middleware
+- Role-based access control dependencies
+- New API routes under `/api/v1/auth/*`
+- Alembic migration to create users table
+- Added missing dependencies (python-jose, email-validator) to requirements.txt
+
+Frontend:
+- AuthContext for managing authentication state
+- ProtectedRoute component for restricting access to authenticated users
+- Axios client with interceptors for token refresh
+- Login page with email/password fields, password toggle
+- Register page with employee ID, full name, email, password validation (minimum length, uppercase, lowercase, number, special character)
+- Forgot password page
+- Reset password page with token from URL
+- Dashboard page (placeholder) with welcome message and logout button
+- Updated App.jsx with router setup
+
+Not included in this milestone:
+
+- Employee, attendance, leave, payroll, notification, or report features
+- Email integration (SMTP not configured yet)
+- Persistent token blacklist (uses in-memory storage)
 
 ## License
 
