@@ -186,6 +186,16 @@ html.dark .bg-gray-200 {
   background-color: #334155 !important;
 }
 
+/* Keep the welcome-card leave action readable when generic dark-mode
+   background overrides turn its white surface into a dark one. */
+html.dark .request-leave-button {
+  background-color: #eef2ff !important;
+  color: #312e81 !important;
+}
+html.dark .request-leave-button:hover {
+  background-color: #e0e7ff !important;
+}
+
 /* Dark Mode Badges (Role tags, status indicators) */
 html.dark .bg-purple-50 {
   background-color: rgba(147, 51, 234, 0.15) !important;

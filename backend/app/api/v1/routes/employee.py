@@ -23,6 +23,20 @@ from app.utils.security import get_password_hash
 router = APIRouter()
 
 
+def ensure_employee_access(current_user: User, user_id: UUID, db: Session) -> None:
+    """Allow admins globally and HR officers only for employees assigned to them."""
+    if current_user.role == UserRole.ADMIN or current_user.id == user_id:
+        return
+    if current_user.role == UserRole.HR:
+        profile = EmployeeRepository(db).get_profile_by_user_id(user_id)
+        if profile and profile.hr_id == current_user.id:
+            return
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="This employee is not assigned to you",
+    )
+
+
 def get_employee_response(user: User, db: Session) -> User:
     """Helper to ensure a user has an EmployeeProfile and resolve manager and HR names."""
     if not user.profile:
@@ -64,6 +78,7 @@ def list_employees(
         department=department,
         designation=designation,
         role=role,
+        assigned_hr_id=current_user.id if current_user.role == UserRole.HR else None,
         page=page,
         size=size
     )
@@ -86,11 +101,7 @@ def get_employee(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id and current_user.role not in [UserRole.HR, UserRole.ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+    ensure_employee_access(current_user, user_id, db)
 
     user_repo = UserRepository(db)
     user = user_repo.get_by_id(user_id)
@@ -126,12 +137,17 @@ def create_employee(
     password = employee_in.password or "Welcome123!"
     hashed_password = get_password_hash(password)
 
+    # HR officers may onboard employees into their own team. Only an admin can
+    # create another privileged HR/admin account or assign a different HR.
+    new_role = employee_in.role if current_user.role == UserRole.ADMIN else UserRole.EMPLOYEE
+    assigned_hr_id = employee_in.hr_id if current_user.role == UserRole.ADMIN else current_user.id
+
     new_user = User(
         employee_id=employee_in.employee_id,
         full_name=employee_in.full_name,
         email=employee_in.email,
         hashed_password=hashed_password,
-        role=employee_in.role,
+        role=new_role,
         is_active=True,
         is_email_verified=True
     )
@@ -144,7 +160,7 @@ def create_employee(
         department=employee_in.department,
         designation=employee_in.designation,
         manager_id=employee_in.manager_id,
-        hr_id=employee_in.hr_id,
+        hr_id=assigned_hr_id,
         joining_date=employee_in.joining_date,
         base_salary=employee_in.base_salary,
         allowances=employee_in.allowances,
@@ -184,6 +200,9 @@ def update_employee(
             detail="Employee not found"
         )
 
+    if not is_self:
+        ensure_employee_access(current_user, user_id, db)
+
     if is_hr_admin:
         if employee_in.full_name is not None:
             target_user.full_name = employee_in.full_name
@@ -196,7 +215,7 @@ def update_employee(
                         detail="Email already registered"
                     )
                 target_user.email = employee_in.email
-        if employee_in.role is not None:
+        if current_user.role == UserRole.ADMIN and employee_in.role is not None:
             target_user.role = employee_in.role
         user_repo.update(target_user)
 
@@ -217,7 +236,7 @@ def update_employee(
             profile.designation = employee_in.designation
         if employee_in.manager_id is not None:
             profile.manager_id = employee_in.manager_id
-        if employee_in.hr_id is not None:
+        if current_user.role == UserRole.ADMIN and employee_in.hr_id is not None:
             profile.hr_id = employee_in.hr_id
         if employee_in.joining_date is not None:
             profile.joining_date = employee_in.joining_date
@@ -258,6 +277,8 @@ def delete_employee(
             detail="Cannot delete yourself"
         )
 
+    ensure_employee_access(current_user, user_id, db)
+
     emp_repo = EmployeeRepository(db)
     profile = emp_repo.get_profile_by_user_id(user_id)
     if profile:
@@ -289,11 +310,7 @@ def upload_avatar(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id and current_user.role not in [UserRole.HR, UserRole.ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+    ensure_employee_access(current_user, user_id, db)
 
     user_repo = UserRepository(db)
     emp_repo = EmployeeRepository(db)
@@ -333,11 +350,7 @@ def upload_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id and current_user.role not in [UserRole.HR, UserRole.ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+    ensure_employee_access(current_user, user_id, db)
 
     user_repo = UserRepository(db)
     emp_repo = EmployeeRepository(db)
@@ -386,11 +399,7 @@ def delete_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.id != user_id and current_user.role not in [UserRole.HR, UserRole.ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+    ensure_employee_access(current_user, user_id, db)
 
     emp_repo = EmployeeRepository(db)
     doc = emp_repo.get_document(document_id)

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import RoleChecker, get_current_user
 from app.database.session import get_db
 from app.models.payroll import Payslip
+from app.repositories.employee import EmployeeRepository
 from app.models.user import User, UserRole
 from app.schemas.payroll import (
     PaginatedPayslipResponse,
@@ -20,6 +21,15 @@ from app.services.payroll import PayrollService
 
 router = APIRouter(tags=["Payroll Management"])
 admin_hr = RoleChecker([UserRole.ADMIN, UserRole.HR])
+
+
+def ensure_payroll_access(current_user: User, user_id: UUID, db: Session) -> None:
+    if current_user.role == UserRole.ADMIN or current_user.id == user_id:
+        return
+    profile = EmployeeRepository(db).get_profile_by_user_id(user_id)
+    if current_user.role == UserRole.HR and profile and profile.hr_id == current_user.id:
+        return
+    raise HTTPException(status_code=403, detail="This employee is not assigned to you")
 
 
 def map_payslip_to_response(p: Payslip) -> PayslipResponse:
@@ -45,8 +55,9 @@ def map_payslip_to_response(p: Payslip) -> PayslipResponse:
 def generate_payslip(
     payload: PayslipCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(admin_hr)
+    current_user: User = Depends(admin_hr)
 ):
+    ensure_payroll_access(current_user, payload.user_id, db)
     service = PayrollService(db)
     payslip = service.generate_payslip(
         user_id=payload.user_id,
@@ -91,10 +102,19 @@ def get_payroll_history(
     page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    _: User = Depends(admin_hr)
+    current_user: User = Depends(admin_hr)
 ):
+    if user_id:
+        ensure_payroll_access(current_user, user_id, db)
     service = PayrollService(db)
-    items, total = service.list_payslips(user_id=user_id, month=month, year=year, page=page, size=size)
+    items, total = service.list_payslips(
+        user_id=user_id,
+        month=month,
+        year=year,
+        assigned_hr_id=current_user.id if current_user.role == UserRole.HR else None,
+        page=page,
+        size=size,
+    )
     
     formatted_items = [map_payslip_to_response(item) for item in items]
     pages = (total + size - 1) // size if total > 0 else 1
@@ -111,10 +131,11 @@ def get_payroll_history(
 @router.get("/payroll/stats", response_model=PayrollStats)
 def get_payroll_stats(
     db: Session = Depends(get_db),
-    _: User = Depends(admin_hr)
+    current_user: User = Depends(admin_hr)
 ):
     service = PayrollService(db)
-    return PayrollStats(**service.get_stats())
+    assigned_hr_id = current_user.id if current_user.role == UserRole.HR else None
+    return PayrollStats(**service.payroll_repo.get_stats(assigned_hr_id=assigned_hr_id))
 
 
 @router.get("/payroll/{payslip_id}/pdf")
@@ -132,11 +153,7 @@ def get_payslip_pdf(
         )
         
     # Check permissions (Self or HR/Admin)
-    if current_user.id != payslip.user_id and current_user.role not in [UserRole.HR, UserRole.ADMIN]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions to access this payslip PDF"
-        )
+    ensure_payroll_access(current_user, payslip.user_id, db)
         
     pdf_bytes = service.generate_payslip_pdf(payslip)
     
@@ -156,9 +173,13 @@ def update_payslip(
     payslip_id: UUID,
     payload: PayslipUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(admin_hr)
+    current_user: User = Depends(admin_hr)
 ):
     service = PayrollService(db)
+    existing = service.get_payslip(payslip_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Payslip not found")
+    ensure_payroll_access(current_user, existing.user_id, db)
     payslip = service.update_payslip(
         payslip_id=payslip_id,
         basic_salary=payload.basic_salary,
@@ -175,8 +196,12 @@ def update_payslip(
 def delete_payslip(
     payslip_id: UUID,
     db: Session = Depends(get_db),
-    _: User = Depends(admin_hr)
+    current_user: User = Depends(admin_hr)
 ):
     service = PayrollService(db)
+    existing = service.get_payslip(payslip_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Payslip not found")
+    ensure_payroll_access(current_user, existing.user_id, db)
     service.delete_payslip(payslip_id)
     return {"message": "Payslip record deleted successfully"}

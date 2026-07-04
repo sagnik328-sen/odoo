@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from app.database.session import get_db
 from app.main import app
 from app.models.leave import Notification
+from app.models.employee import EmployeeProfile
 from app.models.payroll import Payslip
 from app.models.user import User, UserRole
 from app.utils.security import get_password_hash
@@ -80,6 +81,10 @@ def test_authentication_logout_revokes_access_token():
 def test_payroll_and_reports_work_together_with_role_protection():
     employee, employee_password = create_user(UserRole.EMPLOYEE)
     hr, hr_password = create_user(UserRole.HR)
+    database = next(get_db())
+    database.add(EmployeeProfile(user_id=employee.id, hr_id=hr.id))
+    database.commit()
+    database.close()
     try:
         employee_tokens = login(employee, employee_password)
         hr_tokens = login(hr, hr_password)

@@ -418,6 +418,7 @@ const EmployeeDirectory = ({ currentUser }) => {
             >
               <option value="">All Designations</option>
               <option value="Software Developer">Software Developer</option>
+              <option value="Software Engineer">Software Engineer</option>
               <option value="Senior Frontend Engineer">Senior Frontend Engineer</option>
               <option value="HR Specialist">HR Specialist</option>
               <option value="Product Manager">Product Manager</option>
@@ -661,8 +662,12 @@ const EmployeeDirectory = ({ currentUser }) => {
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
                     >
                       <option value="employee">Employee</option>
-                      <option value="hr">HR Operations</option>
-                      <option value="admin">Administrator</option>
+                      {currentUser?.role === 'admin' && (
+                        <>
+                          <option value="hr">HR Operations</option>
+                          <option value="admin">Administrator</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -738,16 +743,22 @@ const EmployeeDirectory = ({ currentUser }) => {
                   {formFields.role === 'employee' && (
                     <div>
                       <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned HR Officer</label>
-                      <select
-                        value={formFields.hr_id}
-                        onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
-                      >
-                        <option value="">None / No HR Assigned</option>
-                        {hrs.map(hr => (
-                          <option key={hr.id} value={hr.id}>{hr.full_name}</option>
-                        ))}
-                      </select>
+                      {currentUser?.role === 'admin' ? (
+                        <select
+                          value={formFields.hr_id}
+                          onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
+                        >
+                          <option value="">None / No HR Assigned</option>
+                          {hrs.map(hr => (
+                            <option key={hr.id} value={hr.id}>{hr.full_name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+                          {currentUser?.full_name} (automatically assigned)
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -916,8 +927,12 @@ const EmployeeDirectory = ({ currentUser }) => {
                       className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
                     >
                       <option value="employee">Employee</option>
-                      <option value="hr">HR Operations</option>
-                      <option value="admin">Administrator</option>
+                      {currentUser?.role === 'admin' && (
+                        <>
+                          <option value="hr">HR Operations</option>
+                          <option value="admin">Administrator</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -993,16 +1008,22 @@ const EmployeeDirectory = ({ currentUser }) => {
                   {formFields.role === 'employee' && (
                     <div>
                       <label className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned HR Officer</label>
-                      <select
-                        value={formFields.hr_id}
-                        onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
-                      >
-                        <option value="">None / No HR Assigned</option>
-                        {hrs.map(hr => (
-                          <option key={hr.id} value={hr.id}>{hr.full_name}</option>
-                        ))}
-                      </select>
+                      {currentUser?.role === 'admin' ? (
+                        <select
+                          value={formFields.hr_id}
+                          onChange={(e) => setFormFields({ ...formFields, hr_id: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white"
+                        >
+                          <option value="">None / No HR Assigned</option>
+                          {hrs.map(hr => (
+                            <option key={hr.id} value={hr.id}>{hr.full_name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+                          {currentUser?.full_name} (assigned HR)
+                        </div>
+                      )}
                     </div>
                   )}
 

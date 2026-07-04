@@ -92,10 +92,11 @@ class PayrollService:
         user_id: UUID | None = None,
         month: str | None = None,
         year: int | None = None,
+        assigned_hr_id: UUID | None = None,
         page: int = 1,
         size: int = 10
     ) -> tuple[list[Payslip], int]:
-        return self.payroll_repo.list_payslips(user_id, month, year, page, size)
+        return self.payroll_repo.list_payslips(user_id, month, year, assigned_hr_id, page, size)
 
     def update_payslip(
         self,

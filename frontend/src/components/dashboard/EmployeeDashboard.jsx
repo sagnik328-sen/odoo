@@ -385,7 +385,7 @@ const EmployeeDashboard = () => {
           <div className="flex gap-3">
             <button 
               onClick={() => setIsLeaveModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-indigo-900 shadow-md transition hover:bg-indigo-50 hover:scale-105 active:scale-95"
+              className="request-leave-button inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-indigo-900 shadow-md transition hover:bg-indigo-50 hover:scale-105 active:scale-95"
             >
               <Plus className="h-4 w-4" /> Request Leave
             </button>

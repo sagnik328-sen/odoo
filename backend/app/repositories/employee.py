@@ -8,6 +8,9 @@ from app.models.user import User
 
 
 class EmployeeRepository:
+    DEFAULT_DEPARTMENT = "Operations"
+    DEFAULT_DESIGNATION = "Software Engineer"
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -50,11 +53,24 @@ class EmployeeRepository:
         department: str | None = None,
         designation: str | None = None,
         role: str | None = None,
+        assigned_hr_id: UUID | None = None,
         page: int = 1,
         size: int = 10
     ) -> tuple[list[User], int]:
         query = select(User).outerjoin(EmployeeProfile, User.id == EmployeeProfile.user_id).options(joinedload(User.profile))
         count_query = select(func.count(User.id)).outerjoin(EmployeeProfile, User.id == EmployeeProfile.user_id)
+
+        # The directory displays these defaults for profiles whose job fields are
+        # blank. Use the same effective values for searching and filtering so a
+        # row shown as "Operations / Software Engineer" can actually be found.
+        effective_department = func.coalesce(
+            func.nullif(func.trim(EmployeeProfile.department), ""),
+            self.DEFAULT_DEPARTMENT,
+        )
+        effective_designation = func.coalesce(
+            func.nullif(func.trim(EmployeeProfile.designation), ""),
+            self.DEFAULT_DESIGNATION,
+        )
 
         filters = []
         if search:
@@ -64,16 +80,18 @@ class EmployeeRepository:
                     User.full_name.like(search_pattern),
                     User.email.like(search_pattern),
                     User.employee_id.like(search_pattern),
-                    EmployeeProfile.department.like(search_pattern),
-                    EmployeeProfile.designation.like(search_pattern)
+                    effective_department.like(search_pattern),
+                    effective_designation.like(search_pattern)
                 )
             )
         if department:
-            filters.append(EmployeeProfile.department == department)
+            filters.append(func.lower(effective_department) == department.strip().lower())
         if designation:
-            filters.append(EmployeeProfile.designation == designation)
+            filters.append(func.lower(effective_designation) == designation.strip().lower())
         if role:
             filters.append(User.role == role)
+        if assigned_hr_id:
+            filters.append(EmployeeProfile.hr_id == assigned_hr_id)
 
         if filters:
             query = query.where(*filters)

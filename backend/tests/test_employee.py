@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.database.session import get_db
 from app.main import app
+from app.models.employee import EmployeeProfile
 from app.models.user import User, UserRole
 from app.utils.security import get_password_hash
 
@@ -73,6 +74,34 @@ def test_hr_admin_crud_flow():
     db.commit()
     db.refresh(hr_user)
 
+    other_hr = User(
+        employee_id=f"EMP{uuid.uuid4().hex[:4].upper()}",
+        full_name="Other HR User",
+        email=f"other_hr_{uuid.uuid4().hex[:6]}@example.com",
+        hashed_password=get_password_hash("TestPassword123!"),
+        role=UserRole.HR,
+        is_active=True,
+        is_email_verified=True,
+    )
+    db.add(other_hr)
+    db.commit()
+    db.refresh(other_hr)
+
+    other_employee = User(
+        employee_id=f"EMP{uuid.uuid4().hex[:4].upper()}",
+        full_name="Other HR Employee",
+        email=f"other_emp_{uuid.uuid4().hex[:6]}@example.com",
+        hashed_password=get_password_hash("TestPassword123!"),
+        role=UserRole.EMPLOYEE,
+        is_active=True,
+        is_email_verified=True,
+    )
+    db.add(other_employee)
+    db.commit()
+    db.refresh(other_employee)
+    db.add(EmployeeProfile(user_id=other_employee.id, hr_id=other_hr.id))
+    db.commit()
+
     created_employee_user_id = None
 
     try:
@@ -84,6 +113,13 @@ def test_hr_admin_crud_flow():
         assert login_res.status_code == 200
         hr_token = login_res.json()["access_token"]
         headers = {"Authorization": f"Bearer {hr_token}"}
+
+        # Employees assigned to another HR are neither listed nor directly accessible.
+        scoped_list_res = client.get("/api/v1/employees?size=100", headers=headers)
+        assert scoped_list_res.status_code == 200
+        assert all(item["id"] != str(other_employee.id) for item in scoped_list_res.json()["items"])
+        forbidden_res = client.get(f"/api/v1/employees/{other_employee.id}", headers=headers)
+        assert forbidden_res.status_code == 403
 
         # 1. Onboard / Create Employee
         new_emp_email = f"new_emp_{uuid.uuid4().hex[:6]}@example.com"
@@ -109,6 +145,7 @@ def test_hr_admin_crud_flow():
         assert create_res.status_code == 201
         data = create_res.json()
         assert data["full_name"] == "Onboarded Employee"
+        assert data["profile"]["hr_id"] == str(hr_user.id)
         assert data["profile"]["department"] == "Engineering"
         assert data["profile"]["base_salary"] == 5000.0
         created_employee_user_id = data["id"]
@@ -186,6 +223,13 @@ def test_hr_admin_crud_flow():
         created_employee_user_id = None  # deleted successfully
 
     finally:
+        db.expire_all()
+        other_employee_in_db = db.query(User).filter(User.id == other_employee.id).first()
+        if other_employee_in_db:
+            db.delete(other_employee_in_db)
+        other_hr_in_db = db.query(User).filter(User.id == other_hr.id).first()
+        if other_hr_in_db:
+            db.delete(other_hr_in_db)
         # Cleanup
         db.delete(hr_user)
         if created_employee_user_id:

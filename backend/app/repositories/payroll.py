@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.payroll import Payslip
+from app.models.employee import EmployeeProfile
 
 
 class PayrollRepository:
@@ -32,10 +33,16 @@ class PayrollRepository:
         user_id: UUID | None = None,
         month: str | None = None,
         year: int | None = None,
+        assigned_hr_id: UUID | None = None,
         page: int = 1,
         size: int = 10
     ) -> tuple[list[Payslip], int]:
         query = select(Payslip).options(joinedload(Payslip.user))
+
+        if assigned_hr_id:
+            query = query.join(EmployeeProfile, EmployeeProfile.user_id == Payslip.user_id).where(
+                EmployeeProfile.hr_id == assigned_hr_id
+            )
 
         if user_id:
             query = query.where(Payslip.user_id == user_id)
@@ -70,9 +77,8 @@ class PayrollRepository:
         self.db.delete(payslip)
         self.db.commit()
 
-    def get_stats(self) -> dict:
-        result = self.db.execute(
-            select(
+    def get_stats(self, assigned_hr_id: UUID | None = None) -> dict:
+        statement = select(
                 func.sum(Payslip.net_salary).label("total_disbursed"),
                 func.sum(Payslip.basic_salary).label("total_basic"),
                 func.sum(Payslip.allowances).label("total_allowances"),
@@ -81,7 +87,11 @@ class PayrollRepository:
                 func.sum(Payslip.tax).label("total_tax"),
                 func.count(func.distinct(Payslip.user_id)).label("employee_count")
             )
-        ).first()
+        if assigned_hr_id:
+            statement = statement.join(EmployeeProfile, EmployeeProfile.user_id == Payslip.user_id).where(
+                EmployeeProfile.hr_id == assigned_hr_id
+            )
+        result = self.db.execute(statement).first()
         
         return {
             "total_disbursed": float(result.total_disbursed or 0.0),
