@@ -143,15 +143,35 @@ The React application runs on `http://localhost:5173`.
 
 ---
 
-## 🔑 Demo Credentials
+## 🔑 Demo Credentials & Previews
 
-Use these pre-seeded accounts to explore different dashboard layers:
+Use these pre-seeded accounts to explore the dynamic dashboard interfaces:
 
-| Role | Email | Password | Employee ID |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@peopleflow.com` | `AdminPassword123!` | `ADMIN001` |
-| **HR Operations** | `hr@peopleflow.com` | `HRPassword123!` | `HR001` |
-| **Employee** | `employee@peopleflow.com` | `EmployeePassword123!` | `EMP001` |
+| Role | Email | Password | Employee ID | Preview Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **Administrator** | `admin@peopleflow.com` | `AdminPassword123!` | `ADMIN001` | [View Admin Dashboard](#1-administrator--manager-dashboard) |
+| **HR Operations** | `hr@peopleflow.com` | `HRPassword123!` | `HR001` | [View HR Dashboard](#2-hr-operations-dashboard) |
+| **Employee** | `employee@peopleflow.com` | `EmployeePassword123!` | `EMP001` | [View Employee Portal](#3-employee-portal) |
+
+---
+
+## 🖥️ Dashboard Showcase
+
+### 1. Administrator / Manager Dashboard
+*Full control over role permissions, payroll cycles, and overall workforce analytics.*
+![Administrator Dashboard](frontend/public/readmeoutput/manager.png)
+
+---
+
+### 2. HR Operations Dashboard
+*Manage leave requests, shift allocations, and monitor real-time company-wide check-in logs.*
+![HR Operations Dashboard](frontend/public/readmeoutput/hr.png)
+
+---
+
+### 3. Employee Portal
+*Personal attendance clock, leaves application hub, salary slips generator, and LLM assistant access.*
+![Employee Portal](frontend/public/readmeoutput/employee.png)
 
 ---
 
